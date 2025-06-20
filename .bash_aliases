@@ -1,3 +1,6 @@
+# SkyNet Admin Alias Library (`~/.bash_aliases`)
+
+```bash
 # === [🔥 UFW – Firewall Control] ===
 alias ufwstatus="sudo ufw status numbered"
 alias ufwreset="sudo ufw reset && echo 'Firewall reset. Reload your baseline rules.'"
@@ -18,7 +21,7 @@ alias tsping="tailscale ping dns.cpoff.com && tailscale ping forge.cpoff.com"
 
 # === [🧠 Host Access – Core Nodes] ===
 alias forge="ssh curt@forge.cpoff.com"
-alias nas="ssh admin@plex.cpoff.com"
+alias nas="ssh admin@nas.cpoff.com"
 alias dns="ssh pi@dns.cpoff.com"
 alias node="ssh pi@node.cpoff.com"
 alias routerui="firefox http://router.cpoff.com"
@@ -34,3 +37,4 @@ alias alertlog="journalctl -p 3 -xb"
 alias skynetmap="echo 'Trusted: 192.168.10.x | IoT: 192.168.20.x | Infra: 192.168.99.x'"
 alias netcheck="ping -c 4 dns.cpoff.com && ping -c 4 1.1.1.1"
 alias portwatch="sudo netstat -tulpn | grep LISTEN"
+```
