@@ -1,7 +1,5 @@
 # SkyNet Admin Alias Reference (`~/.bash_aliases`)
 
-> Syntax-highlighted, categorized bash alias library for all SkyNet Prod 3 nodes.
-
 ---
 
 ### 🔥 UFW – Firewall Control
