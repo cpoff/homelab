@@ -49,7 +49,7 @@
 | Device         | Subdomain           | VLAN | IP Address     | Notes                            |
 |----------------|----------------------|------|----------------|----------------------------------|
 | Router         | router.cpoff.com     | 99   | 192.168.99.1   | Admin UI                         |
-| TEG208E Switch | switch.cpoff.com     | 99   | DHCP or Static | Managed UI                       |
+| TEG208E Switch | switch.cpoff.com     | 99   | 192.168.99.8   | Managed UI                       |
 | Synology NAS   | nas.cpoff.com        | 10   | 192.168.10.2   | Plex, HA, Portainer              |
 | RPi 5          | forge.cpoff.com      | 10   | 192.168.10.3   | CasaOS, Jellyfin, Dashy          |
 | RPi 4          | dns.cpoff.com        | 99   | 192.168.99.2   | Pi-hole + Unbound                |
