@@ -1,8 +1,10 @@
-# SkyNet Admin Alias Reference (`~/.bash_aliases`)
+# SkyNet Admin Alias Library
+
+These aliases are intended to be saved in `~/.bash_aliases` and sourced in your terminal session.
 
 ---
 
-### 🔥 UFW – Firewall Control
+## 🔥 UFW – Firewall Control
 
 ```bash
 alias ufwstatus="sudo ufw status numbered"
@@ -13,7 +15,7 @@ alias ufwtail="journalctl -u ufw -f"
 
 ---
 
-### 📦 Docker Shortcuts
+## 📦 Docker Shortcuts
 
 ```bash
 alias dcu="docker compose up -d"
@@ -25,7 +27,7 @@ alias dockernuke="docker system prune -af --volumes"
 
 ---
 
-### 🔒 Tailscale Utilities
+## 🔒 Tailscale Utilities
 
 ```bash
 alias tsstatus="tailscale status"
@@ -35,7 +37,7 @@ alias tsping="tailscale ping dns.cpoff.com && tailscale ping forge.cpoff.com"
 
 ---
 
-### 🧠 Host Access – Core Nodes
+## 🧠 Host Access – Core Nodes
 
 ```bash
 alias forge="ssh curt@forge.cpoff.com"
@@ -48,7 +50,7 @@ alias switchui="firefox http://switch.cpoff.com"
 
 ---
 
-### 🖥️ System Control – Desktop Tools
+## 🖥️ System Control – Desktop Tools
 
 ```bash
 alias updates="sudo apt update && sudo apt upgrade -y"
@@ -59,7 +61,7 @@ alias alertlog="journalctl -p 3 -xb"  # Critical system messages
 
 ---
 
-### 🔍 Diagnostic Utilities
+## 🔍 Diagnostic Utilities
 
 ```bash
 alias skynetmap="echo 'Trusted: 192.168.10.x | IoT: 192.168.20.x | Infra: 192.168.99.x'"
