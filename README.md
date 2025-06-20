@@ -68,14 +68,17 @@ Security: Valid SSL certs for all internal services
 RPi 4 — dns.cpoff.com (Pi-hole + Unbound)
 # Allow DNS from Trusted VLAN
 ufw allow proto udp from 192.168.10.0/24 to any port 53
+
 ufw allow proto tcp from 192.168.10.0/24 to any port 53
 
 # Allow DNS from IoT VLAN
 ufw allow proto udp from 192.168.20.0/24 to any port 53
+
 ufw allow proto tcp from 192.168.20.0/24 to any port 53
 
 # Allow DNS from Infra VLAN
 ufw allow proto udp from 192.168.99.0/24 to any port 53
+
 ufw allow proto tcp from 192.168.99.0/24 to any port 53
 
 # Allow Pi-hole Web UI
@@ -84,11 +87,13 @@ ufw allow from 192.168.10.0/24 to any port 80,443
 # Default policy
 ufw default deny incoming
 ufw default allow outgoingSynology NAS — plex.cpoff.com, ha.cpoff.com, etc.
+
 # Web UIs: HA, NPM, Portainer, etc.
 ufw allow from 192.168.10.0/24 to any port 80,443
 
 # Plex streaming (LAN + IoT)
 ufw allow from 192.168.10.0/24 to any port 32400
+
 ufw allow from 192.168.20.0/24 to any port 32400
 
 # VPN ingress from Tailscale
@@ -96,7 +101,9 @@ ufw allow from 100.64.0.0/10
 
 # Default policy
 ufw default deny incoming
+
 ufw default allow outgoingRPi 5 — forge.cpoff.com (Dashy + App Stack)
+
 # Dashy and App UIs
 ufw allow from 192.168.10.0/24 to any port 80,443
 
@@ -108,7 +115,9 @@ ufw deny from 192.168.20.0/24
 
 # Default policy
 ufw default deny incoming
+
 ufw default allow outgoingRPi 3 — node.cpoff.com (Utility & Monitoring)
+
 # Netdata UI from NAS or trusted desktop
 ufw allow from 192.168.10.2 to any port 19999
 
@@ -120,37 +129,64 @@ ufw allow from 192.168.99.0/24 to any
 
 # Default policy
 ufw default deny incoming
+
 ufw default allow outgoing
+
 9. SkyNet Admin Alias Library for ~/.bash_aliases
+
 # === [🔥 UFW – Firewall Control] ===
 alias ufwstatus="sudo ufw status numbered"
+
 alias ufwreset="sudo ufw reset && echo 'Firewall reset. Reload your baseline rules.'"
+
 alias ufwreload="sudo ufw reload"
+
 alias ufwtail="journalctl -u ufw -f"
+
 # === [📦 Docker Shortcuts] ===
 alias dcu="docker compose up -d"
+
 alias dcd="docker compose down"
+
 alias dps="docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
+
 alias logs="docker compose logs -f"
+
 alias dockernuke="docker system prune -af --volumes"
+
 # === [🔒 Tailscale Utilities] ===
 alias tsstatus="tailscale status"
+
 alias tsip="tailscale ip -4 | head -n 1"
+
 alias tsping="tailscale ping dns.cpoff.com && tailscale ping forge.cpoff.com"
+
 # === [🧠 Host Access – Core Nodes] ===
 alias forge="ssh curt@forge.cpoff.com"
+
 alias nas="ssh admin@plex.cpoff.com"
+
 alias dns="ssh pi@dns.cpoff.com"
+
 alias node="ssh pi@node.cpoff.com"
+
 alias routerui="firefox http://router.cpoff.com"
+
 alias switchui="firefox http://switch.cpoff.com"
+
 # === [🖥️ System Control – Desktop Tools] ===
 alias updates="sudo apt update && sudo apt upgrade -y"
+
 alias rebootme="sudo reboot now"
+
 alias cleanme="sudo apt autoremove -y && sudo apt autoclean"
+
 alias alertlog="journalctl -p 3 -xb"  # Critical system messages
+
 # === [🔍 Diagnostic Utilities] ===
 alias skynetmap="echo 'Trusted: 192.168.10.x | IoT: 192.168.20.x | Infra: 192.168.99.x'"
+
 alias netcheck="ping -c 4 dns.cpoff.com && ping -c 4 1.1.1.1"
+
 alias portwatch="sudo netstat -tulpn | grep LISTEN"
 
