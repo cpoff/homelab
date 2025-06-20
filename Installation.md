@@ -6,11 +6,11 @@ This file provides a step-by-step installation and configuration sequence for bu
 
 ## ⚙️ Global Assumptions
 
-- All devices receive static IPs via `dhcpcd.conf` or DHCP reservations
-- VLAN-aware topology with trunked switch configuration (see `switch.cpoff.com.md`)
-- Internal DNS resolution handled by `dns.cpoff.com` (Pi-hole + Unbound)
-- Overlay mesh connectivity established via Tailscale
-- All administrative operations handled from Pop!_OS workstation
+- All devices receive static IPs via `dhcpcd.conf` or DHCP reservations  
+- VLAN-aware topology with trunked switch configuration (see `switch.cpoff.com.md`)  
+- Internal DNS resolution handled by `dns.cpoff.com` (Pi-hole + Unbound)  
+- Overlay mesh connectivity established via Tailscale  
+- All administrative operations handled from Pop!_OS workstation  
 
 ---
 
@@ -24,7 +24,7 @@ This file provides a step-by-step installation and configuration sequence for bu
 - Set static IP: `192.168.99.1`  
 - Define VLAN trunk to managed switch  
 - Set DNS servers: `192.168.99.2`, `1.1.1.1`  
-- Secure admin panel (disable remote mgmt, UPNP)
+- Secure admin panel (disable remote mgmt, UPNP)  
 
 #### 1.2 `switch.cpoff.com` (Tenda TEG208E)
 
@@ -39,35 +39,39 @@ This file provides a step-by-step installation and configuration sequence for bu
 
 #### 2.1 `dns.cpoff.com` (RPi 4 – Pi-hole + Unbound)
 
-- Set hostname: `dns`
-- Set static IP: `192.168.99.2`
+- Set hostname: `dns`  
+- Set static IP: `192.168.99.2`  
 - Install Pi-hole and Unbound:
   ```bash
   curl -sSL https://install.pi-hole.net | bash
   sudo apt install unbound -y
   ```
-- Configure `/etc/unbound/unbound.conf.d/pi-hole.conf`
-- Apply UFW rules (allow DNS from VLANs 10/20/99, Pi-hole UI from VLAN 10 only)
-- Join Tailscale with hostname `dns`
-- Validate DNS recursion and web UI
+- Configure `/etc/unbound/unbound.conf.d/pi-hole.conf`  
+- Apply UFW rules (allow DNS from VLANs 10/20/99, Pi-hole UI from VLAN 10 only)  
+- Join Tailscale with hostname `dns`  
+- Validate DNS recursion and web UI  
 
-#### 2.2 `plex.cpoff.com` (Synology NAS)
+#### 2.2 `nas.cpoff.com` (Synology NAS)
 
-- Assign static IP: `192.168.10.2`
+- Assign static IP: `192.168.10.2`  
 - Install:
   - Home Assistant (Docker)
   - NGINX Proxy Manager (Docker)
   - Portainer
   - Plex Media Server
-- Link subdomains via Pi-hole and wildcard DNS
-- Configure NGINX to use Let's Encrypt certs via DNS-01 (Cloudflare)
-- Apply UFW: open ports 80, 443, 32400 (VLANs 10/20), allow 100.64.0.0/10
-- Join Tailscale with hostname `plex`
+- Link subdomains via Pi-hole and wildcard DNS  
+- Configure NGINX to use Let's Encrypt certs via DNS-01 (Cloudflare)  
+- Apply UFW: open ports 80, 443, 32400 (VLANs 10/20), allow 100.64.0.0/10  
+- Join Tailscale with hostname `nas`  
+- Validate access to:
+  - https://nas.cpoff.com
+  - Plex: http://nas.cpoff.com:32400/web
+  - Portainer and NPM dashboards
 
 #### 2.3 `forge.cpoff.com` (RPi 5 – App Stack)
 
-- Set hostname: `forge`
-- Set static IP: `192.168.10.3`
+- Set hostname: `forge`  
+- Set static IP: `192.168.10.3`  
 - Install Docker + Docker Compose:
   ```bash
   curl -fsSL https://get.docker.com | sh
@@ -77,42 +81,47 @@ This file provides a step-by-step installation and configuration sequence for bu
   - Dashy
   - Jellyfin
   - CasaOS or custom containers
-- Apply UFW: allow 80/443, 3000–3999 from VLAN 10; deny VLAN 20
-- Join Tailscale with hostname `forge` + tag `tag:apps` (optional)
-- Access Dashy at `http://dashy.cpoff.com`
+- Apply UFW:
+  - Allow 80/443 and 3000–3999 from VLAN 10
+  - Deny all from VLAN 20
+- Join Tailscale with hostname `forge` + tag `tag:apps` (optional)  
+- Access Dashy at `http://dashy.cpoff.com`  
 
 #### 2.4 `node.cpoff.com` (RPi 3 – Utility Monitor)
 
-- Set hostname: `node`
-- Set static IP: `192.168.99.3`
+- Set hostname: `node`  
+- Set static IP: `192.168.99.3`  
 - Install UFW and Netdata:
   ```bash
   sudo apt install ufw -y
   bash <(curl -Ss https://my-netdata.io/kickstart.sh)
   ```
 - Apply UFW:
-  - Allow `192.168.10.2` to port 19999
-  - Allow VLAN 10 and VLAN 99 internal traffic
-- Join Tailscale with hostname `node` + tag `tag:infra` (optional)
-- Validate Netdata at `http://node.cpoff.com:19999`
+  - Allow `192.168.10.2` to port 19999 (Netdata)
+  - Allow VLAN 10 and VLAN 99 for diagnostics
+- Join Tailscale with hostname `node` + tag `tag:infra` (optional)  
+- Validate Netdata at `http://node.cpoff.com:19999`  
 
 ---
 
 ### ✅ 3. Configure Admin Workstation (Pop!_OS)
 
-- Assign to VLAN 10 (DHCP or static)
+- Assign to VLAN 10 (DHCP or static)  
 - Create `.bash_aliases` with:
-  - UFW tools
-  - Docker helpers
-  - SSH targets (e.g. `ssh curt@forge.cpoff.com`)
-  - Tailscale and diagnostics
+  - UFW commands
+  - Docker shortcuts
+  - SSH access to nodes
+  - Tailscale + diagnostics helpers
 
 ```bash
 source ~/.bash_aliases
 ```
 
-- Join Tailscale with hostname `opscenter`
-- Validate SSH, dashboards, Netdata, DNS resolution
+- Join Tailscale with hostname `opscenter`  
+- Validate:
+  - SSH into `dns`, `forge`, `nas`, `node`
+  - Dashboard access
+  - Ping & DNS resolution via Pi-hole
 
 ---
 
@@ -126,39 +135,43 @@ source ~/.bash_aliases
 
 - Suggested tags:
   - `dns` → no tag
-  - `plex` → `tag:media`
+  - `nas` → `tag:media`
   - `forge` → `tag:apps`
   - `node` → `tag:infra`
 
-- Create ACLs in admin console to control:
-  - Port 53 (dns)
-  - Port 32400 (plex)
-  - Port 19999 (node)
-  - Ports 3000–3999 (forge)
+- Define Tailscale ACLs for:
+
+  | Port     | Description               |
+  |----------|---------------------------|
+  | 53       | DNS (dns.cpoff.com)       |
+  | 32400    | Plex (nas.cpoff.com)      |
+  | 19999    | Netdata (node.cpoff.com)  |
+  | 3000–3999| App stack (forge.cpoff.com)|
 
 ---
 
 ## 📋 Final Validation Checklist
 
-- [ ] Pi-hole resolving `*.cpoff.com`
-- [ ] UFW properly isolates VLANs
-- [ ] NAS issues Let’s Encrypt cert via NPM + Cloudflare
-- [ ] Tailscale mesh up and visible in admin console
-- [ ] SSH and dashboards accessible from Pop!_OS
-- [ ] Netdata UI functional for `node.cpoff.com`
-- [ ] Dashy, Jellyfin running on `forge.cpoff.com`
-- [ ] Admin alias fleet functional and sourced
+- [ ] Pi-hole resolving `*.cpoff.com`  
+- [ ] VLAN firewalling and subnet segmentation confirmed  
+- [ ] NGINX Proxy Manager issues valid cert via Cloudflare  
+- [ ] Tailscale overlay mesh visible in admin console  
+- [ ] SSH, UFW, Docker, Portainer accessible from Pop!_OS  
+- [ ] Netdata web dashboard reachable at `node.cpoff.com:19999`  
+- [ ] Dashy/Jellyfin running on `forge.cpoff.com`  
+- [ ] Admin alias library sourced and effective  
 
 ---
 
 ## 🧠 Suggested File Layout in Repo
 
 ```
-/README.md                      ← Full topology and alias library
-/docs/tailscale.md             ← Overlay config (this file)
+/README.md                     ← Full topology and alias library
+/docs/tailscale.md            ← Tailscale overlay config
+/docs/install-checklist.md    ← This file
 /devices/
   dns.cpoff.com.md
-  plex.cpoff.com.md
+  nas.cpoff.com.md
   forge.cpoff.com.md
   node.cpoff.com.md
   switch.cpoff.com.md
@@ -168,4 +181,4 @@ source ~/.bash_aliases
 
 ---
 
-_Last Updated: SkyNet Prod 3 Installation — Complete Sequence_
+_Last Updated: SkyNet Prod 3 Installation — with `nas.cpoff.com` Naming Convention_
