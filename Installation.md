@@ -28,7 +28,7 @@ This file provides a step-by-step installation and configuration sequence for bu
 
 #### 1.2 `switch.cpoff.com` (Tenda TEG208E)
 
-- Set static IP: e.g., `192.168.99.x`  
+- Set static IP: e.g., `192.168.99.8`  
 - Define port VLAN assignments (tagged/untagged)  
 - Verify management VLAN (99) access from admin port  
 - Test inter-VLAN isolation and trunk configuration  
