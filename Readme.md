@@ -50,7 +50,7 @@
 |----------------|----------------------|------|----------------|----------------------------------|
 | Router         | router.cpoff.com     | 99   | 192.168.99.1   | Admin UI                         |
 | TEG208E Switch | switch.cpoff.com     | 99   | DHCP or Static | Managed UI                       |
-| Synology NAS   | plex.cpoff.com       | 10   | 192.168.10.2   | Plex, HA, Portainer              |
+| Synology NAS   | nas.cpoff.com        | 10   | 192.168.10.2   | Plex, HA, Portainer              |
 | RPi 5          | forge.cpoff.com      | 10   | 192.168.10.3   | CasaOS, Jellyfin, Dashy          |
 | RPi 4          | dns.cpoff.com        | 99   | 192.168.99.2   | Pi-hole + Unbound                |
 | RPi 3          | node.cpoff.com       | 99   | 192.168.99.3   | Netdata, utility monitoring      |
@@ -64,7 +64,7 @@
 
 All subdomains resolve locally via Pi-hole:
 
-- `plex.cpoff.com`, `ha.cpoff.com`, `portainer.cpoff.com` → NAS  
+- `nas.cpoff.com`, `ha.cpoff.com`, `portainer.cpoff.com` → NAS  
 - `dashy.cpoff.com`, `forge.cpoff.com` → RPi 5  
 - `dns.cpoff.com`, `node.cpoff.com` → Infra nodes  
 - `router.cpoff.com`, `switch.cpoff.com` → Admin interfaces  
@@ -106,7 +106,7 @@ ufw default deny incoming
 ufw default allow outgoing
 ```
 
-### 🧠 Synology NAS — `plex.cpoff.com`, `ha.cpoff.com`, etc.
+### 🧠 Synology NAS — `nas.cpoff.com`, `ha.cpoff.com`, etc.
 
 ```bash
 # Web UIs from Trusted VLAN
@@ -183,7 +183,7 @@ alias tsping="tailscale ping dns.cpoff.com && tailscale ping forge.cpoff.com"
 
 # === [🧠 Host Access – Core Nodes] ===
 alias forge="ssh curt@forge.cpoff.com"
-alias nas="ssh admin@plex.cpoff.com"
+alias nas="ssh admin@nas.cpoff.com"
 alias dns="ssh pi@dns.cpoff.com"
 alias node="ssh pi@node.cpoff.com"
 alias routerui="firefox http://router.cpoff.com"
