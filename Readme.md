@@ -200,3 +200,69 @@ alias skynetmap="echo 'Trusted: 192.168.10.x | IoT: 192.168.20.x | Infra: 192.16
 alias netcheck="ping -c 4 dns.cpoff.com && ping -c 4 1.1.1.1"
 alias portwatch="sudo netstat -tulpn | grep LISTEN"
 ```
+
+# SkyNet Prod 3 – Device Interconnection Topology
+
+This map shows how each node in your SkyNet deployment physically and logically connects via the managed switch and VLAN structure. Designed for clarity during provisioning and future audits.
+
+---
+
+## 🔌 Physical Port-to-Device Mapping (TEG208E Switch)
+
+| Switch Port | Connected Device        | Hostname         | VLAN   | Connection Type     |
+|-------------|--------------------------|------------------|--------|----------------------|
+| 1           | Router                   | router           | Trunk  | Uplink (VLANs 10/20/99) |
+| 2           | Synology NAS             | nas              | 10     | Ethernet             |
+| 3           | RPi 4                    | dns              | 99     | Ethernet             |
+| 4           | RPi 5                    | forge            | 10     | Ethernet             |
+| 5           | RPi 3                    | node             | 99     | Ethernet             |
+| 6           | IoT dev/test board       | iot-dev          | 20     | Ethernet             |
+| 7           | Smart TV / Firestick hub | media-iot        | 20     | Ethernet/WiFi bridge |
+| 8           | Admin Workstation        | opscenter        | 10     | Ethernet             |
+
+---
+
+## 🧠 VLAN Tagging Behavior
+
+| Port | Tagging     | Untagged VLAN | Purpose                        |
+|------|-------------|----------------|--------------------------------|
+| 1    | Tagged      | —              | Routes all VLANs to router     |
+| 2    | Untagged    | 10             | NAS in Trusted VLAN            |
+| 3    | Untagged    | 99             | DNS resolver node              |
+| 4    | Untagged    | 10             | App stack on Forge             |
+| 5    | Untagged    | 99             | Netdata and diagnostics        |
+| 6    | Untagged    | 20             | IoT test board                 |
+| 7    | Untagged    | 20             | Media IoT segment              |
+| 8    | Untagged    | 10             | Admin shell & UI                |
+
+---
+
+## 🌐 Logical Layer 3 Mapping
+
+| Node           | Uplink Path                 | Final Hop Switch Port |
+|----------------|-----------------------------|------------------------|
+| dns            | Switch Port 3 → Port 1 → Router (VLAN 99) |
+| forge          | Switch Port 4 → Port 1 → Router (VLAN 10) |
+| nas            | Switch Port 2 → Port 1 → Router (VLAN 10) |
+| node           | Switch Port 5 → Port 1 → Router (VLAN 99) |
+| iot-dev        | Switch Port 6 → Port 1 → Router (VLAN 20) |
+| opscenter      | Switch Port 8 → Port 1 → Router (VLAN 10) |
+
+> All external/ISP traffic leaves via Router VLAN trunk through Port 1.
+
+---
+
+## 🔐 Overlay Map (Tailscale)
+
+- All nodes joined into mesh: `dns`, `forge`, `nas`, `node`, `opscenter`
+- No dependency on VLAN reachability for overlay communication
+- Enforces zero-trust access to:
+  - `:53` DNS (dns)
+  - `:32400` Plex (nas)
+  - `:19999` Netdata (node)
+  - `:3000–3999` App dashboards (forge)
+
+---
+
+_Last Updated: SkyNet Prod 3 – Physical/Logical Device Topology_
+
