@@ -64,9 +64,9 @@
 
 All subdomains resolve locally via Pi-hole:
 
-- `plex.cpoff.com`, `ha.cpoff.com`, `portainer.cpoff.com` → NAS (192.168.10.2)  
-- `dashy.cpoff.com`, `forge.cpoff.com` → RPi 5 (192.168.10.3)  
-- `dns.cpoff.com`, `node.cpoff.com` → Infra nodes (RPi 4/3)  
+- `plex.cpoff.com`, `ha.cpoff.com`, `portainer.cpoff.com` → NAS  
+- `dashy.cpoff.com`, `forge.cpoff.com` → RPi 5  
+- `dns.cpoff.com`, `node.cpoff.com` → Infra nodes  
 - `router.cpoff.com`, `switch.cpoff.com` → Admin interfaces  
 
 ---
@@ -75,8 +75,8 @@ All subdomains resolve locally via Pi-hole:
 
 - **DNS Hosting**: Cloudflare  
 - **Certificates**: Wildcard cert for `*.cpoff.com` via DNS-01  
-- **Provisioned By**: NGINX Proxy Manager on NAS  
-- **Renewal**: Automatic (~60–90 days)  
+- **Provisioned By**: NGINX Proxy Manager (on NAS)  
+- **Renewal**: Automatic every ~60–90 days  
 - **Security**: Valid SSL certs for all internal services  
 
 ---
@@ -86,91 +86,81 @@ All subdomains resolve locally via Pi-hole:
 ### 📡 RPi 4 — `dns.cpoff.com` (Pi-hole + Unbound)
 
 ```bash
-# Allow DNS (UDP/TCP) from Trusted VLAN (workstation, NAS, etc.)
+# Allow DNS (UDP/TCP) from Trusted VLAN
 ufw allow proto udp from 192.168.10.0/24 to any port 53
 ufw allow proto tcp from 192.168.10.0/24 to any port 53
 
-# Allow DNS from IoT VLAN (TVs, streamers)
+# Allow DNS from IoT VLAN
 ufw allow proto udp from 192.168.20.0/24 to any port 53
 ufw allow proto tcp from 192.168.20.0/24 to any port 53
 
-# Allow DNS from Infra VLAN (RPi nodes, NAS, internal resolvers)
+# Allow DNS from Infra VLAN
 ufw allow proto udp from 192.168.99.0/24 to any port 53
 ufw allow proto tcp from 192.168.99.0/24 to any port 53
 
-# Allow access to Pi-hole Web UI from VLAN 10 only
+# Allow Pi-hole Web UI from VLAN 10 only
 ufw allow from 192.168.10.0/24 to any port 80,443
 
-# Deny all other unsolicited inbound packets
+# Default policies
 ufw default deny incoming
-
-# Permit all outbound traffic
 ufw default allow outgoing
 ```
 
 ### 🧠 Synology NAS — `plex.cpoff.com`, `ha.cpoff.com`, etc.
 
 ```bash
-# Allow dashboard access from Trusted VLAN (workstation)
+# Web UIs from Trusted VLAN
 ufw allow from 192.168.10.0/24 to any port 80,443
 
-# Allow Plex traffic from VLAN 10 (local clients)
+# Plex from VLANs 10 & 20
 ufw allow from 192.168.10.0/24 to any port 32400
-
-# Allow Plex from VLAN 20 (TVs / Google TV)
 ufw allow from 192.168.20.0/24 to any port 32400
 
-# Allow ingress from Tailscale overlay (remote access)
+# VPN ingress from Tailscale
 ufw allow from 100.64.0.0/10
 
-# Default lockdown for everything else inbound
+# Default policies
 ufw default deny incoming
-
-# Open egress for updates, DNS, container images, cert refresh
 ufw default allow outgoing
 ```
 
-### 🛠️ RPi 5 — `forge.cpoff.com` (CasaOS, Jellyfin, Dashy)
+### 🛠️ RPi 5 — `forge.cpoff.com` (App Stack)
 
 ```bash
-# Allow web access to dashboards on HTTP/HTTPS
+# HTTP/HTTPS access from VLAN 10
 ufw allow from 192.168.10.0/24 to any port 80,443
 
-# Allow Docker-hosted apps (e.g., CasaOS) on high ports
+# Access to containerized apps
 ufw allow from 192.168.10.0/24 to any port 3000:3999 proto tcp
 
-# Block all inbound connections from VLAN 20 (IoT)
+# Block IoT VLAN
 ufw deny from 192.168.20.0/24
 
-# Lockdown all other inbound access
+# Default policies
 ufw default deny incoming
-
-# Allow outbound to internet, local DNS, update services
 ufw default allow outgoing
 ```
 
-### 📊 RPi 3 — `node.cpoff.com` (Netdata + Diagnostics)
+### 📊 RPi 3 — `node.cpoff.com` (Monitoring Node)
 
 ```bash
-# Permit Netdata UI access from NAS only
+# Netdata access from NAS
 ufw allow from 192.168.10.2 to any port 19999
 
-# Allow general ping + system probes from Trusted VLAN
+# General probes from VLAN 10
 ufw allow from 192.168.10.0/24 to any
 
-# Allow backend infra communication from VLAN 99
+# Internal monitoring from Infra
 ufw allow from 192.168.99.0/24 to any
 
-# Block all other inbound connections
+# Default policies
 ufw default deny incoming
-
-# Full egress allowed (for telemetry, sync, updates)
 ufw default allow outgoing
 ```
 
 ---
 
-## 8. Admin Terminal Alias Library (`~/.bash_aliases`)
+## 8. Admin Alias Library (`~/.bash_aliases`)
 
 ```bash
 # === [🔥 UFW – Firewall Control] ===
@@ -200,4 +190,13 @@ alias routerui="firefox http://router.cpoff.com"
 alias switchui="firefox http://switch.cpoff.com"
 
 # === [🖥️ System Control – Desktop Tools] ===
-alias updates="sudo apt update && sudo apt upgrade -
+alias updates="sudo apt update && sudo apt upgrade -y"
+alias rebootme="sudo reboot now"
+alias cleanme="sudo apt autoremove -y && sudo apt autoclean"
+alias alertlog="journalctl -p 3 -xb"
+
+# === [🔍 Diagnostic Utilities] ===
+alias skynetmap="echo 'Trusted: 192.168.10.x | IoT: 192.168.20.x | Infra: 192.168.99.x'"
+alias netcheck="ping -c 4 dns.cpoff.com && ping -c 4 1.1.1.1"
+alias portwatch="sudo netstat -tulpn | grep LISTEN"
+```
