@@ -1,4 +1,3 @@
-# SkyNet – Prod 3 Topology Documentation
 Here’s the full SkyNet – Prod 3 Topology. It’s structured with clear headings, tables, and sections for a polished layout:
 SkyNet – Prod 3 Topology Documentation
 1. Overview
@@ -70,50 +69,58 @@ RPi 4 — dns.cpoff.com (Pi-hole + Unbound)
 # Allow DNS from Trusted VLAN
 ufw allow proto udp from 192.168.10.0/24 to any port 53
 ufw allow proto tcp from 192.168.10.0/24 to any port 53
+
 # Allow DNS from IoT VLAN
 ufw allow proto udp from 192.168.20.0/24 to any port 53
 ufw allow proto tcp from 192.168.20.0/24 to any port 53
+
 # Allow DNS from Infra VLAN
 ufw allow proto udp from 192.168.99.0/24 to any port 53
 ufw allow proto tcp from 192.168.99.0/24 to any port 53
+
 # Allow Pi-hole Web UI
 ufw allow from 192.168.10.0/24 to any port 80,443
+
 # Default policy
 ufw default deny incoming
-ufw default allow outgoing
-Synology NAS — plex.cpoff.com, ha.cpoff.com, etc.
+ufw default allow outgoingSynology NAS — plex.cpoff.com, ha.cpoff.com, etc.
 # Web UIs: HA, NPM, Portainer, etc.
 ufw allow from 192.168.10.0/24 to any port 80,443
 
 # Plex streaming (LAN + IoT)
 ufw allow from 192.168.10.0/24 to any port 32400
 ufw allow from 192.168.20.0/24 to any port 32400
+
 # VPN ingress from Tailscale
 ufw allow from 100.64.0.0/10
+
 # Default policy
 ufw default deny incoming
-ufw default allow outgoing
-RPi 5 — forge.cpoff.com (Dashy + App Stack)
+ufw default allow outgoingRPi 5 — forge.cpoff.com (Dashy + App Stack)
 # Dashy and App UIs
 ufw allow from 192.168.10.0/24 to any port 80,443
+
 # CasaOS / Containers (e.g., 3000–3999)
 ufw allow from 192.168.10.0/24 to any port 3000:3999 proto tcp
+
 # Deny IoT VLAN completely
 ufw deny from 192.168.20.0/24
+
 # Default policy
 ufw default deny incoming
-ufw default allow outgoing
-RPi 3 — node.cpoff.com (Utility & Monitoring)
+ufw default allow outgoingRPi 3 — node.cpoff.com (Utility & Monitoring)
 # Netdata UI from NAS or trusted desktop
 ufw allow from 192.168.10.2 to any port 19999
+
 # General diagnostics + ping from VLAN 10
 ufw allow from 192.168.10.0/24 to any
+
 # Internal access from Infra
 ufw allow from 192.168.99.0/24 to any
+
 # Default policy
 ufw default deny incoming
 ufw default allow outgoing
-
 9. SkyNet Admin Alias Library for ~/.bash_aliases
 # === [🔥 UFW – Firewall Control] ===
 alias ufwstatus="sudo ufw status numbered"
