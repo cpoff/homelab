@@ -25,7 +25,7 @@ curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up --authkey tskey-xxxxxxxxxxxxxxxx --hostname <hostname>
 ```
 
-- Replace `<hostname>` with the node name: `dns`, `forge`, `node`, `plex`, etc.  
+- Replace `<hostname>` with the node name: `dns`, `forge`, `node`, `nas`, etc.  
 - Use a pre-generated ephemeral auth key from your [admin portal](https://login.tailscale.com/admin/settings/keys)
 
 Confirm connection:
@@ -39,13 +39,13 @@ tailscale ip -4
 
 ## 🌐 Behavior and Scope
 
-| Device         | Tailscale Use Case                                         |
-|----------------|------------------------------------------------------------|
-| `dns.cpoff.com` | Allow DNS resolution via port 53 (optional ACL)            |
-| `plex.cpoff.com` | Secure access to Plex, HA, NGINX Proxy Manager             |
-| `forge.cpoff.com` | App dashboards (CasaOS, Jellyfin) for internal use        |
+| Device           | Tailscale Use Case                                         |
+|------------------|------------------------------------------------------------|
+| `dns.cpoff.com`  | Allow DNS resolution via port 53 (optional ACL)            |
+| `nas.cpoff.com`  | Secure access to Plex, HA, NGINX Proxy Manager             |
+| `forge.cpoff.com`| App dashboards (CasaOS, Jellyfin) for internal use         |
 | `node.cpoff.com` | Netdata dashboard + ping/metrics tunneling                 |
-| Pop!_OS Desktop | Admin SSH + dashboard access to all nodes via overlay      |
+| Pop!_OS Desktop  | Admin SSH + dashboard access to all nodes via overlay      |
 
 > Optional hostname convention: Match `--hostname` to each node’s short name for clarity in status views.
 
@@ -67,7 +67,7 @@ Define ACLs in the admin portal (JSON-based):
       "users": ["autogroup:admin"],
       "ports": [
         "dns.cpoff.com:53",
-        "plex.cpoff.com:32400",
+        "nas.cpoff.com:32400",
         "node.cpoff.com:19999",
         "forge.cpoff.com:3000-3999"
       ]
@@ -88,27 +88,28 @@ sudo tailscale up --authkey tskey-xxxxx --hostname node --advertise-tags=tag:inf
 
 ### 📡 `dns.cpoff.com`
 
-- Optional: Respond to DNS over Tailscale (must permit 53 from overlay)
-- Optionally advertise as a DNS nameserver via `tailscale up --advertise-routes=...` (not currently used in SkyNet)
+- Optional: Respond to DNS over Tailscale (must permit 53 from overlay)  
+- Optionally advertise as a DNS nameserver via `--advertise-routes` (not currently used in SkyNet)
 
-### 📦 `plex.cpoff.com`
+### 📦 `nas.cpoff.com`
 
 - Accept HTTPS from Tailscale IP range (100.64.0.0/10)  
 - Allow access to:
-  - Plex Web: https://plex.cpoff.com
-  - Portainer, HA, NPM UIs
+  - Plex Web: https://nas.cpoff.com:32400/web  
+  - Portainer, HA, NPM via subdomains  
+- May serve as central ingress hub
 
 ### 🛠️ `forge.cpoff.com`
 
 - Useful for launching Dashy, Jellyfin, CasaOS remotely  
 - Expose only if ACLs are enforced  
-- Run secure services behind NGINX Proxy Manager or via Tailscale's built-in `tailscale serve` (experimental)
+- Optionally run services via NGINX Proxy Manager or `tailscale serve` (experimental)
 
 ### 📊 `node.cpoff.com`
 
-- No public exposure  
-- Tail `tailscale ping` from other nodes  
-- Netdata exposed only to `plex.cpoff.com` by UFW policy
+- Minimal exposure  
+- Ping diagnostics via overlay (`tailscale ping node`)  
+- Netdata reachable from NAS only by UFW rule
 
 ---
 
@@ -123,7 +124,7 @@ tailscale status
 
 # Access dashboards
 curl -s http://node.cpoff.com:19999
-curl -s https://plex.cpoff.com
+curl -s https://nas.cpoff.com:32400/web
 
 # Query DNS resolver
 dig dashy.cpoff.com @dns.cpoff.com
@@ -133,11 +134,11 @@ dig dashy.cpoff.com @dns.cpoff.com
 
 ## 🔧 Optional Enhancements
 
-- Create admin-only **Tailscale ACL groups** for each VLAN domain (infra, apps, diagnostics)  
-- Use Tailscale SSH for passwordless administrative control  
-- Enable [tailscale serve](https://tailscale.dev/serve) for CLI-based reverse proxy  
-- Enable MagicDNS only if compatible with Pi-hole/subdomain routing  
+- Create admin-only **Tailscale ACL groups** for each VLAN domain (`tag:infra`, `tag:apps`, `tag:media`)  
+- Use Tailscale SSH for passwordless administrative access  
+- Enable [tailscale serve](https://tailscale.dev/serve) for reverse proxy via CLI  
+- Enable MagicDNS only if compatible with Pi-hole’s authoritative DNS
 
 ---
 
-_Last Updated: SkyNet Prod 3 – Overlay Topology_
+_Last Updated: SkyNet Prod 3 – Overlay Topology (with `nas.cpoff.com` naming)_
