@@ -71,29 +71,7 @@ All subdomains resolve locally via Pi-hole:
 
 ---
 
-## 6. UFW (Firewall) Highlights
-
-**RPi 4 – dns.cpoff.com**  
-- Allows DNS (UDP/TCP 53) from VLANs 10, 20, 99  
-- Allows web UI from VLAN 10  
-- Denies all other inbound traffic  
-
-**NAS – plex.cpoff.com**  
-- Allows HTTP/HTTPS from VLAN 10  
-- Plex access from VLANs 10 & 20  
-- Allows Tailscale ingress (100.64.0.0/10)  
-
-**RPi 5 – forge.cpoff.com**  
-- Allows port 80/443 + 3000–3999 TCP from VLAN 10  
-- Blocks all from VLAN 20  
-
-**RPi 3 – node.cpoff.com**  
-- Allows Netdata (port 19999) from VLAN 10  
-- General ICMP / health probes allowed  
-
----
-
-## 7. DNS and SSL (Let’s Encrypt)
+## 6. DNS and SSL (Let’s Encrypt)
 
 - **DNS Hosting**: Cloudflare  
 - **Certificates**: Wildcard cert for `*.cpoff.com` via DNS-01  
@@ -103,56 +81,96 @@ All subdomains resolve locally via Pi-hole:
 
 ---
 
-## 8. UFW Rules (All Text)
+## 7. UFW Firewall Rules (With Commentary)
 
-### RPi 4 — dns.cpoff.com
+### 📡 RPi 4 — `dns.cpoff.com` (Pi-hole + Unbound)
 
 ```bash
+# Allow DNS (UDP/TCP) from Trusted VLAN (workstation, NAS, etc.)
 ufw allow proto udp from 192.168.10.0/24 to any port 53
 ufw allow proto tcp from 192.168.10.0/24 to any port 53
+
+# Allow DNS from IoT VLAN (TVs, streamers)
 ufw allow proto udp from 192.168.20.0/24 to any port 53
 ufw allow proto tcp from 192.168.20.0/24 to any port 53
+
+# Allow DNS from Infra VLAN (RPi nodes, NAS, internal resolvers)
 ufw allow proto udp from 192.168.99.0/24 to any port 53
 ufw allow proto tcp from 192.168.99.0/24 to any port 53
+
+# Allow access to Pi-hole Web UI from VLAN 10 only
 ufw allow from 192.168.10.0/24 to any port 80,443
+
+# Deny all other unsolicited inbound packets
 ufw default deny incoming
+
+# Permit all outbound traffic
 ufw default allow outgoing
 ```
 
-### Synology NAS — plex.cpoff.com
+### 🧠 Synology NAS — `plex.cpoff.com`, `ha.cpoff.com`, etc.
 
 ```bash
+# Allow dashboard access from Trusted VLAN (workstation)
 ufw allow from 192.168.10.0/24 to any port 80,443
+
+# Allow Plex traffic from VLAN 10 (local clients)
 ufw allow from 192.168.10.0/24 to any port 32400
+
+# Allow Plex from VLAN 20 (TVs / Google TV)
 ufw allow from 192.168.20.0/24 to any port 32400
+
+# Allow ingress from Tailscale overlay (remote access)
 ufw allow from 100.64.0.0/10
+
+# Default lockdown for everything else inbound
 ufw default deny incoming
+
+# Open egress for updates, DNS, container images, cert refresh
 ufw default allow outgoing
 ```
 
-### RPi 5 — forge.cpoff.com
+### 🛠️ RPi 5 — `forge.cpoff.com` (CasaOS, Jellyfin, Dashy)
 
 ```bash
+# Allow web access to dashboards on HTTP/HTTPS
 ufw allow from 192.168.10.0/24 to any port 80,443
+
+# Allow Docker-hosted apps (e.g., CasaOS) on high ports
 ufw allow from 192.168.10.0/24 to any port 3000:3999 proto tcp
+
+# Block all inbound connections from VLAN 20 (IoT)
 ufw deny from 192.168.20.0/24
+
+# Lockdown all other inbound access
 ufw default deny incoming
+
+# Allow outbound to internet, local DNS, update services
 ufw default allow outgoing
 ```
 
-### RPi 3 — node.cpoff.com
+### 📊 RPi 3 — `node.cpoff.com` (Netdata + Diagnostics)
 
 ```bash
+# Permit Netdata UI access from NAS only
 ufw allow from 192.168.10.2 to any port 19999
+
+# Allow general ping + system probes from Trusted VLAN
 ufw allow from 192.168.10.0/24 to any
+
+# Allow backend infra communication from VLAN 99
 ufw allow from 192.168.99.0/24 to any
+
+# Block all other inbound connections
 ufw default deny incoming
+
+# Full egress allowed (for telemetry, sync, updates)
 ufw default allow outgoing
 ```
 
 ---
 
-## 9. SkyNet Admin Alias Library (`~/.bash_aliases`)
+## 8. Admin Terminal Alias Library (`~/.bash_aliases`)
 
 ```bash
 # === [🔥 UFW – Firewall Control] ===
@@ -182,14 +200,4 @@ alias routerui="firefox http://router.cpoff.com"
 alias switchui="firefox http://switch.cpoff.com"
 
 # === [🖥️ System Control – Desktop Tools] ===
-alias updates="sudo apt update && sudo apt upgrade -y"
-alias rebootme="sudo reboot now"
-alias cleanme="sudo apt autoremove -y && sudo apt autoclean"
-alias alertlog="journalctl -p 3 -xb"
-
-# === [🔍 Diagnostic Utilities] ===
-alias skynetmap="echo 'Trusted: 192.168.10.x | IoT: 192.168.20.x | Infra: 192.168.99.x'"
-alias netcheck="ping -c 4 dns.cpoff.com && ping -c 4 1.1.1.1"
-alias portwatch="sudo netstat -tulpn | grep LISTEN"
-```
-
+alias updates="sudo apt update && sudo apt upgrade -
