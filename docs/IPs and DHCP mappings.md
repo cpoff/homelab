@@ -9,7 +9,7 @@
 |------|------------------------------------|--------------------|------|------------------|------------------|
 | 1    | TP-Link AX6600 Router (uplink)     | —                  | trunk| —                | Ethernet         |
 | 2    | Raspberry Pi 5                     | forge.cpoff.com    | 10   | 192.168.10.3     | Ethernet         |
-| 3    | Synology NAS                       | plex.cpoff.com     | 10   | 192.168.10.2     | Ethernet         |
+| 3    | Synology NAS                       | nas.cpoff.com      | 10   | 192.168.10.2     | Ethernet         |
 | 4    | Raspberry Pi 4                     | dns.cpoff.com      | 99   | 192.168.99.2     | Ethernet         |
 | 5    | Raspberry Pi 3                     | node.cpoff.com     | 99   | 192.168.99.3     | Ethernet         |
 | 6    | TP-Link AC1200 WiFi Extender       | —                  | 30   | 192.168.30.X     | Ethernet         |
