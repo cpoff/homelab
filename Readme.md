@@ -1,107 +1,100 @@
-# 🤖 SkyNet – Full Topology & Infrastructure Map (Finalized Physical Layout)
+# 🤖 SkyNet – Full Topology & Infrastructure Map (Prod 1 – OS & Hostname Finalization)
 
-The authoritative and up-to-date blueprint of **SkyNet**, now reflecting:
-- Dockge as the sole container dashboard (on `raspi5` and `nas`)
-- No Portainer
-- Work devices and Pop box isolated on a trusted switch (VLAN 10)
-- Smart TV + Google TV grouped on an unmanaged switch (VLAN 20)
-- Physical and logical segmentation enforced with purpose
+This is the definitive **Prod 1** configuration of **SkyNet**, now incorporating:
+
+- Accurate OS assignments across Raspberry Pi devices
+- Updated hostnames: `raspi3.home` and `raspi4.home`
+- Dockge deployed on both `raspi5` and `nas`
+- Pop box and work laptops isolated on VLAN 10 switch
+- Smart TV and Google TV grouped on unmanaged switch (VLAN 20)
+- Reverse proxy, DNS, and container visibility fully operational
 
 ---
 
 ## 🧠 Node Directory & DNS
 
-| Hostname     | DNS Name            | IP Address     | Role & Function                         | Key Services & Aliases                                       |
-|--------------|---------------------|----------------|------------------------------------------|--------------------------------------------------------------|
-| `popbox`     | `popbox.home`       | 10.10.10.10    | Admin orchestration + NGINX reverse proxy | Ansible, dnsmasq, Homarr, NPM                               |
-|              |                     |                | **Physically isolated on VLAN 10 switch** |                                                              |
-| `raspi5`     | `raspi5.home`       | 10.10.20.14    | Container stack + observer               | Mosquitto, Uptime Kuma, **Dockge**                          |
-|              | `dockge.home`       |                | DNS alias (Dockge @ port 5001)           | UI for containers on `raspi5`                               |
-| `nas`        | `nas.home`          | 10.10.20.10    | Plex, Home Assistant, media libraries     | Plex, Synology Drive, SMB/NFS, **HA**, **Dockge**           |
-|              | `assist.home`       |                | DNS alias → `nas.home:8123`              | Home Assistant UI                                           |
-|              | `plex.home`         |                | DNS alias → `nas.home:32400`             | Plex Web UI                                                 |
-|              | `dockge-nas.home`   |                | DNS alias → `nas.home:5002`              | Dockge for NAS containers                                   |
-| `raspi3`     | `dns.home`          | 10.10.30.53    | Primary DNS & filter node                | Pi-hole, Unbound, Tailscale                                 |
-| `raspi4`     | `pi4util.home`      | 10.10.30.11    | DNS backup + telemetry                   | AdGuard, Zigbee2MQTT, NodeRED, Prometheus                   |
-| `router`     | `router.home`       | 10.10.99.2     | Wi-Fi AP & WAN gateway                   | AX6600 uplink                                                |
-| `switch`     | `switch.home`       | 10.10.99.1     | VLAN trunking + switch control           | TEG208E managed interface                                    |
-| `printer`    | `printer.home`      | 10.10.20.21    | Wired LAN printer                        | UI optional                                                  |
-| `smarttv`    | `smarttv.home`      | 10.10.20.30    | Google TV smart display                  | Plex client, casting                                         |
-| `googletv`   | `googletv.home`     | 10.10.20.31    | Chromecast / HDMI streamer               | Google TV, Plex, YouTube TV                                 |
+| Hostname     | DNS Name            | IP Address     | OS                  | Role & Key Services                                      |
+|--------------|---------------------|----------------|---------------------|----------------------------------------------------------|
+| `popbox`     | `popbox.home`       | 10.10.10.10    | Pop!_OS             | Admin control plane: NGINX Proxy, Homarr, dnsmasq        |
+| `raspi5`     | `raspi5.home`       | 10.10.20.14    | Raspberry Pi OS     | Dockge, Uptime Kuma, Mosquitto (VLAN 20)                 |
+|              | `dockge.home`       |                |                     | Web UI for raspi5 containers (port 5001)                 |
+| `raspi3`     | `raspi3.home`       | 10.10.30.53    | DietPi              | Pi-hole + Unbound DNS resolver (VLAN 30)                 |
+| `raspi4`     | `raspi4.home`       | 10.10.30.11    | DietPi              | AdGuard, NodeRED, Zigbee2MQTT, Prometheus (VLAN 30)      |
+| `nas`        | `nas.home`          | 10.10.20.10    | Synology DSM        | Plex, Home Assistant, Dockge, NFS/SMB shares (VLAN 20)   |
+|              | `assist.home`       |                |                     | HA UI proxy → `nas:8123`                                 |
+|              | `plex.home`         |                |                     | Plex UI proxy → `nas:32400`                              |
+|              | `dockge-nas.home`   |                |                     | Dockge UI for NAS containers (port 5002)                 |
+| `printer`    | `printer.home`      | 10.10.20.21    | N/A (HW device)     | Office printing over VLAN 20                             |
+| `smarttv`    | `smarttv.home`      | 10.10.20.30    | Google TV           | Plex client + streamer (on media switch)                 |
+| `googletv`   | `googletv.home`     | 10.10.20.31    | Google TV           | HDMI dongle, casting (on media switch)                   |
+| `router`     | `router.home`       | 10.10.99.2     | TP-Link AX6600      | Wi-Fi SSID hub + VLAN trunking uplink                    |
+| `switch`     | `switch.home`       | 10.10.99.1     | Tenda TEG208E       | Trunk-aware switch for all VLAN routing                  |
 
 ---
 
-## 🧩 VLAN Blueprint
+## 🧩 VLAN Architecture
 
-| VLAN ID | Name      | Subnet           | Purpose                              | DHCP Control           |
-|---------|-----------|------------------|---------------------------------------|-------------------------|
-| 10      | Admin     | 10.10.10.0/24    | Orchestration, laptops, Pop box       | `dnsmasq` on `popbox`   |
-| 20      | Services  | 10.10.20.0/24    | NAS, Dockge, Plex, TVs, streamers     | Static/reserved         |
-| 30      | IoT       | 10.10.30.0/24    | Smart plugs, relays, Zigbee bridges   | Static or relay         |
-| 40      | Guest     | 10.10.40.0/24    | Internet-only clients (BYOD)          | Router fallback         |
-| 99      | Mgmt      | 10.10.99.0/24    | Router/switch control                 | Static                  |
-
----
-
-## 📶 SSIDs and VLAN Routing
-
-| SSID         | VLAN | Band   | Broadcast | Devices Served                            |
-|--------------|------|--------|-----------|--------------------------------------------|
-| `Homers`     | 10   | 5GHz   | Hidden    | Work laptops, Pop box (hidden/secure)      |
-| `Spicy Mac`  | 20   | 5GHz   | Visible   | Phones, smart TVs, Google TV               |
-| `Smarties`   | 30   | 2.4GHz | Hidden    | Zigbee/ESP/IoT clients                     |
-
-> SSID VLANs enforced upstream via tagging on TEG208E.
+| VLAN ID | Name      | Subnet           | Purpose                          | DHCP Source           |
+|---------|-----------|------------------|-----------------------------------|------------------------|
+| 10      | Admin     | 10.10.10.0/24    | Trusted devices + orchestration  | `dnsmasq` on `popbox`  |
+| 20      | Services  | 10.10.20.0/24    | NAS, Dockge, Plex, TVs, Raspi5   | Static / reserved      |
+| 30      | IoT       | 10.10.30.0/24    | DNS relays, smart plugs, sensors | Relay or static        |
+| 40      | Guest     | 10.10.40.0/24    | Isolated Wi-Fi clients           | Router fallback        |
+| 99      | Mgmt      | 10.10.99.0/24    | Switch/router config only        | Static                 |
 
 ---
 
-## 🔌 Switch Port Map – TEG208E
+## 📶 SSID-to-VLAN Mapping
 
-| Port | Connected Device/Switch          | VLAN | Tag Mode  |
-|------|----------------------------------|------|-----------|
-| 1    | Pop box + work laptops switch    | 10   | Untagged  |
-| 2    | `raspi5`                         | 20   | Untagged  |
-| 3    | `nas`                            | 20   | Untagged  |
-| 4    | `raspi3`                         | 30   | Untagged  |
-| 5    | `raspi4`                         | 30   | Untagged  |
-| 6    | Unmanaged media switch           | 20   | Untagged  |
-| 7    | `printer`                        | 20   | Untagged  |
-| 8    | Uplink to AX6600 router          | All  | Tagged    |
+| SSID         | VLAN | Band   | Visibility | Devices Served                        |
+|--------------|------|--------|------------|----------------------------------------|
+| `Homers`     | 10   | 5GHz   | Hidden     | Work laptops, Pop box (trusted)        |
+| `Spicy Mac`  | 20   | 5GHz   | Visible    | Phones, TVs, tablets, Plex devices     |
+| `Smarties`   | 30   | 2.4GHz | Hidden     | Zigbee + ESPHome-based IoT nodes       |
 
 ---
 
-## 🌐 Reverse Proxy Map (NPM @ `popbox.home`)
+## 🔌 Switch Ports – TEG208E Layout
 
-| URL                         | Target Backend        | Description                          |
-|-----------------------------|------------------------|---------------------------------------|
-| `https://dashboard.home`    | `popbox:7575`          | Homarr UI                            |
-| `https://assist.home`       | `nas.home:8123`        | Home Assistant                       |
-| `https://plex.home`         | `nas.home:32400`       | Plex server                          |
-| `https://kuma.home`         | `raspi5:3001`          | Uptime Kuma                          |
-| `https://dockge.home`       | `raspi5:5001`          | Dockge (container UI on `raspi5`)    |
-| `https://dockge-nas.home`   | `nas.home:5002`        | Dockge (container UI on NAS)         |
-| `https://dns.home`          | `raspi3`               | Pi-hole                              |
-| `https://adguard.home`      | `pi4util:8053`         | AdGuard                              |
-| `https://printer.home`      | `printer`              | Printer Web UI (if enabled)          |
-
----
-
-## 🧭 DNS Strategy
-
-- `.home` zone served by `dnsmasq` on `popbox`
-- Internal resolution handled by:
-  - `dns.home` (Pi-hole, Unbound)
-  - `pi4util.home` (AdGuard Home backup)
-- All hostnames and aliases Ansible-managed
-- Split DNS optional via VPN or `/etc/hosts` overlays
+| Port | Function                          | VLAN | Tag Mode  |
+|------|-----------------------------------|------|-----------|
+| 1    | Pop box + work laptops switch     | 10   | Untagged  |
+| 2    | `raspi5`                          | 20   | Untagged  |
+| 3    | `nas`                             | 20   | Untagged  |
+| 4    | `raspi3`                          | 30   | Untagged  |
+| 5    | `raspi4`                          | 30   | Untagged  |
+| 6    | Media switch: Smart TV + streamer | 20   | Untagged  |
+| 7    | `printer`                         | 20   | Untagged  |
+| 8    | Uplink to AX6600 router           | All  | Tagged    |
 
 ---
 
-SkyNet is now:
-- Physically segmented
-- VLAN-routed
-- Container-monitored
-- Reverse-proxied
-- Docs-backed
+## 🔐 Reverse Proxy (NGINX Proxy Manager on `popbox`)
 
-Let me know if you'd like a printable `.md`, an SVG diagram, or Homarr tile JSON for rapid UI scaffolding. SkyNet is operational—and self-aware.
+| Friendly URL             | Internal Target         | Purpose                                    |
+|--------------------------|--------------------------|---------------------------------------------|
+| `https://dashboard.home` | `popbox:7575`            | Homarr dashboard                            |
+| `https://assist.home`    | `nas:8123`               | Home Assistant                              |
+| `https://plex.home`      | `nas:32400`              | Plex Web UI                                 |
+| `https://dockge.home`    | `raspi5:5001`            | Dockge for `raspi5` containers              |
+| `https://dockge-nas.home`| `nas:5002`               | Dockge for `nas.home` containers            |
+| `https://kuma.home`      | `raspi5:3001`            | Uptime Kuma                                 |
+| `https://raspi3.home`    | `raspi3`                 | Pi-hole Admin                               |
+| `https://raspi4.home`    | `raspi4:8053`            | AdGuard Home                                |
+| `https://printer.home`   | `printer`                | Printer Web UI (if available)               |
+
+---
+
+## 🧭 DNS Map & Resolution Strategy
+
+- Authoritative DNS: `dnsmasq` on `popbox.home`
+- Primary resolver: `raspi3.home` → Pi-hole + Unbound
+- Secondary resolver: `raspi4.home` → AdGuard Home
+- All entries managed via Ansible and statically mapped
+- Aliases like `assist.home`, `dockge.home`, and `plex.home` route via NGINX proxy
+
+---
+
+SkyNet now reflects your clean naming conventions, lean OS footprint, hardened VLAN boundaries, and a sharp separation of trusted vs. service nodes.
+
+Let me know if you’d like a provisioning checklist, repo-ready `host_vars`, or a Markdown export of this config to throw into version control. SkyNet’s not just online—it’s production-grade.
