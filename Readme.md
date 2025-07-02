@@ -1,51 +1,69 @@
-# ☁️ SkyNet Homelab Topology
+# ☁️ SkyNet Topology Overview
 
 ---
 
-## 🖥️ Device Lineup
+## 🖥️ Device Lineup & Local DNS
 
-| Hostname     | Local DNS Name        | IP Address     | Hardware / OS           | Role                       | Services                                                    |
-|--------------|-----------------------|----------------|--------------------------|----------------------------|-------------------------------------------------------------|
-| `popbox`     | `popbox.home`         | 10.10.10.10    | Dell XPS / Pop!_OS       | Admin core / orchestration| Ansible, Docker, Portainer, Homarr, dnsmasq, Netdata       |
-| `raspi5`     | `raspi5.home`         | 10.10.20.14    | Raspberry Pi 5           | Containers + IoT stack     | Vaultwarden, Mosquitto, Uptime Kuma, Home Assistant (opt)  |
-| `nas`        | `nas.home`            | 10.10.20.10    | Synology NAS             | Storage & media            | Plex, SMB/NFS, Synology Drive, Tautulli (opt)              |
-| `raspi3`     | `dns.home`            | 10.10.30.53    | Raspberry Pi 3           | DNS relay & filtering      | Pi-hole, Unbound, Tailscale                                |
-| `raspi4`     | `pi4util.home`        | 10.10.30.11    | Raspberry Pi 4           | Utility / testbed node     | AdGuard (8053), NodeRED, Zigbee2MQTT, Prometheus           |
-| `router`     | `router.home`         | 10.10.99.2     | TP-Link AX6600 (AX90)    | Core router/gateway        | LAN routing, DHCP relay (opt), SSID broadcast              |
-| `switch`     | `switch.home`         | 10.10.99.1     | Tenda TEG208E switch     | VLAN segmentation          | Tagged uplinks, untagged access ports                      |
+| Hostname     | DNS Name           | IP Address     | Role / Function               | Key Services & Apps                                             |
+|--------------|--------------------|----------------|-------------------------------|-----------------------------------------------------------------|
+| `popbox`     | `popbox.home`      | 10.10.10.10    | Admin Core / Reverse Proxy    | Ansible, Homarr, Portainer, dnsmasq, NGINX Proxy Manager, Netdata |
+| `raspi5`     | `raspi5.home`      | 10.10.20.14    | Container Node                | Vaultwarden, Mosquitto, Uptime Kuma, Home Assistant (opt)       |
+| `nas`        | `nas.home`         | 10.10.20.10    | File & Media Server           | Plex, Synology Drive, Tautulli (opt), SMB/NFS Shares            |
+| `raspi3`     | `dns.home`         | 10.10.30.53    | DNS Relay + Filtering Node    | Pi-hole, Unbound, Tailscale                                     |
+| `raspi4`     | `pi4util.home`     | 10.10.30.11    | Utility Node / Telemetry      | AdGuard (8053), Zigbee2MQTT, NodeRED, Prometheus Exporters      |
+| `router`     | `router.home`      | 10.10.99.2     | Edge Gateway / DHCP fallback  | WAN uplink, VLAN bridge, Wi-Fi SSIDs                            |
+| `switch`     | `switch.home`      | 10.10.99.1     | Core VLAN Switch              | Tagged uplinks, untagged port access for each VLAN              |
 
 ---
 
 ## 🧩 VLAN Configuration
 
-| VLAN ID | Name        | Subnet           | Purpose                              | DHCP Source        |
-|---------|-------------|------------------|---------------------------------------|---------------------|
-| 10      | Admin       | 10.10.10.0/24    | Management and orchestration layer   | dnsmasq on `popbox.home` |
-| 20      | Services    | 10.10.20.0/24    | Containers, NAS, dashboard access    | Relay or static     |
-| 30      | IoT         | 10.10.30.0/24    | DNS, smart plugs, Zigbee relays      | Relay or static     |
-| 40      | Guest       | 10.10.40.0/24    | Visitor Wi-Fi                        | Router fallback     |
-| 99      | Management  | 10.10.99.0/24    | Router/switch/infra config access    | Static-only         |
+| VLAN ID | Name        | Subnet           | Purpose                              | DHCP Source              |
+|---------|-------------|------------------|---------------------------------------|---------------------------|
+| 10      | Admin       | 10.10.10.0/24    | Secure orchestration & control plane | `dnsmasq` on `popbox.home` |
+| 20      | Services    | 10.10.20.0/24    | Containers, NAS, web UIs             | DHCP reservation or relay |
+| 30      | IoT         | 10.10.30.0/24    | Smart plugs, DNS relays, Zigbee      | DHCP relay / static maps  |
+| 40      | Guest       | 10.10.40.0/24    | Internet-only network                | Router (fallback DHCP)    |
+| 99      | Mgmt        | 10.10.99.0/24    | Router, switch, AP management        | Static IPs only           |
+
+VLAN trunking is enforced from `router` → `switch`, then tagged/untagged per-port.
 
 ---
 
-## 📶 Wireless SSID to VLAN Assignments
+## 📶 Wireless SSIDs and VLAN Mapping
 
-| SSID         | Band     | VLAN | Broadcast | Auth Type          | Devices Targeted                  |
-|--------------|----------|------|-----------|---------------------|------------------------------------|
-| AdminLAN     | 5GHz     | 10   | Hidden    | WPA2/3 Enterprise   | Admin devices, on-call laptops     |
-| HomeDevices  | 5GHz     | 20   | Visible   | WPA2 Personal       | Phones, Plex clients, workstations |
-| SmartMesh    | 2.4GHz   | 30   | Hidden    | WPA2 Personal       | IoT switches, sensors, ESPHome     |
+| SSID Name     | Band     | VLAN | Broadcast | Auth Method         | Device Class                     |
+|---------------|----------|------|-----------|----------------------|----------------------------------|
+| `AdminLAN`    | 5GHz     | 10   | Hidden    | WPA2/3 Enterprise    | Admin laptops, tablets           |
+| `HomeDevices` | 5GHz     | 20   | Visible   | WPA2 Personal        | Phones, desktops, streaming gear |
+| `SmartMesh`   | 2.4GHz   | 30   | Hidden    | WPA2 Personal        | IoT sensors, smart plugs         |
 
-> *Note: The AX90 does not support VLAN tagging per SSID natively. Wireless traffic will need to be bridged through your TEG208E switch for tagging or upgraded via VLAN-capable APs.*
-
----
-
-## 🔐 HTTPS Policy (SkyNet Principle)
-
-> Use HTTPS wherever possible, even internally.  
-> Deploy NGINX Proxy Manager or Caddy on `popbox.home` to terminate TLS.  
-> Issue certs via Let's Encrypt DNS-01 or a trusted internal CA (e.g., Smallstep).
+> **Note:** TP-Link Archer AX90 does not support per-SSID VLAN tagging natively. SSID traffic segmentation must happen via switch trunking or upgrading to VLAN-aware APs like the Omada EAP series.
 
 ---
 
-Let me know if you’d like a rendered network diagram, DNS `hosts` file template, or YAML vars scaffold for use in Ansible roles. SkyNet now answers to clean names across every layer.
+## 🔐 HTTPS Access via NGINX Proxy Manager (`popbox.home`)
+
+All proxied services are accessible via `https://<name>.home`:
+
+| Service            | Reverse Proxy URL           | Internal Host             |
+|--------------------|-----------------------------|----------------------------|
+| Homarr             | `https://dashboard.home`    | `popbox.home:7575`         |
+| Vaultwarden        | `https://vaultwarden.home`  | `raspi5.home:80`           |
+| Uptime Kuma        | `https://kuma.home`         | `raspi5.home:3001`         |
+| Pi-hole            | `https://dns.home`          | `dns.home`                 |
+| AdGuard            | `https://adguard.home`      | `pi4util.home:8053`        |
+
+SSL certs via Let's Encrypt DNS-01 challenge or internal CA. TLS enforced globally.
+
+---
+
+## 🧭 DNS Handling
+
+- **Authoritative DNS & DHCP**: `popbox.home` via `dnsmasq`
+- **DNS Filtering**: Primary = `dns.home` (Pi-hole), Secondary = `pi4util.home` (AdGuard Home)
+- **Name Resolution**: `.home` domain mapped for all devices; optional entries in `/etc/hosts` or pushed via Ansible
+
+---
+
+If you'd like, I can bundle this into a printable `.md` file, generate a visual network map, or scaffold it into your playbook repo under `docs/topology.md`. SkyNet is now encrypted, segmented, and fully self-aware.
