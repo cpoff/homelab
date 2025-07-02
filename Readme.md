@@ -1,4 +1,4 @@
-## 🗺️ Homelab Topology Map
+## 🗺️ SkyNet Topology Map
 
 ### 🔧 Network Roles
 
