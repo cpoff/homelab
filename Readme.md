@@ -1,172 +1,124 @@
-# 🤖 SkyNet – Full Topology & Infrastructure Map
+# 🤖 SkyNet – Full Topology & Infrastructure Map (📌 Prod 2)
 
-This is the comprehensive **Prod 2** map of **SkyNet**, now fully incorporating:
-
-- Finalized hostnames, VLANs, OS mappings, and physical layout
-- UFW firewall rule coverage with inline commentary for all applicable nodes
-- Secure inter-VLAN rules for Home Assistant + Kasa IoT control
-- Personal devices integrated cleanly into the Services zone
-- Reverse proxy endpoints, DNS mappings, and broadcast domain designations
+Each component of this architecture is annotated with a superscript footnote 🔹 indicating its intended configuration method:
+- 🖐️ **Manually configured via GUI or CLI**
+- 🤖 **Provisioned using Ansible**
+- 📝 **Defined via static config file or compose**
+- 🛡️ **Configured through dedicated firewall interface**
 
 ---
 
 ## 🧠 Node Directory & DNS
 
-| Hostname       | DNS Name            | IP Address     | OS / Type          | Role & Services                                          |
-|----------------|---------------------|----------------|---------------------|-----------------------------------------------------------|
-| `popbox`       | `popbox.home`       | 10.10.10.10    | Pop!_OS             | Admin orchestrator: NGINX Proxy, dnsmasq, Homarr          |
-| `raspi5`       | `raspi5.home`       | 10.10.20.14    | Raspberry Pi OS     | Dockge, Uptime Kuma, Mosquitto                            |
-| `raspi3`       | `raspi3.home`       | 10.10.30.53    | DietPi              | Pi-hole + Unbound DNS                                     |
-| `raspi4`       | `raspi4.home`       | 10.10.30.11    | DietPi              | AdGuard Home, NodeRED, Zigbee2MQTT, Prometheus            |
-| `nas`          | `nas.home`          | 10.10.20.10    | Synology DSM        | Plex, Home Assistant, Dockge (with Synology Firewall)     |
-| `printer`      | `printer.home`      | 10.10.20.21    | HW Device           | Wired printer, driverless + web UI                        |
-| `smarttv`      | `smarttv.home`      | 10.10.20.30    | Google TV           | Streaming Plex, Chromecast                                |
-| `googletv`     | `googletv.home`     | 10.10.20.31    | Google TV HDMI      | Streaming HDMI stick                                      |
-| `chromebook1`  | `cb1.home`          | 10.10.20.41    | ChromeOS            | Personal laptop 1                                         |
-| `chromebook2`  | `cb2.home`          | 10.10.20.42    | ChromeOS            | Personal laptop 2                                         |
-| `router`       | `router.home`       | 10.10.99.2     | TP-Link AX6600      | Wi-Fi AP + uplink trunk                                   |
-| `switch`       | `switch.home`       | 10.10.99.1     | Tenda TEG208E       | Core switch with port-based VLAN segmentation             |
+| Hostname       | IP Address     | OS / Type           | Role & Services                                                                 |
+|----------------|----------------|----------------------|----------------------------------------------------------------------------------|
+| `popbox`¹²³    | 10.10.10.10    | Pop!_OS              | Admin node with `dnsmasq`, Homarr, NGINX Proxy Manager                          |
+| `raspi5`¹²³    | 10.10.20.14    | Raspberry Pi OS      | Dockge (w/ Watchtower), Uptime Kuma, Mosquitto                                  |
+| `raspi3`¹²³    | 10.10.30.53    | DietPi               | Pi-hole + Unbound                                                               |
+| `raspi4`¹²³    | 10.10.30.11    | DietPi               | AdGuard Home, Zigbee2MQTT, NodeRED, Prometheus                                  |
+| `nas`⁴         | 10.10.20.10    | Synology DSM         | Plex, Home Assistant, Dockge + Synology Firewall                                |
+| `printer`¹      | 10.10.20.21    | Hardware             | Web UI optional, AirPrint-enabled                                               |
+| `smarttv`¹      | 10.10.20.30    | Google TV            | Streaming media client                                                          |
+| `googletv`¹     | 10.10.20.31    | Google TV HDMI       | Cast receiver + streaming                                                       |
+| `chromebook1`¹  | 10.10.20.41    | ChromeOS             | Personal laptop                                                                 |
+| `chromebook2`¹  | 10.10.20.42    | ChromeOS             | Personal laptop                                                                 |
+| `router`¹       | 10.10.99.2     | TP-Link AX6600       | WAN uplink + SSIDs                                                              |
+| `switch`¹       | 10.10.99.1     | TEG208E Managed      | VLAN trunk + port segmentation                                                  |
 
 ---
 
-## 🧩 VLANs & Subnet Purpose
+## 🧩 VLAN Architecture
 
-| VLAN | Name      | Subnet           | Purpose                                             |
-|------|-----------|------------------|------------------------------------------------------|
-| 10   | Admin     | 10.10.10.0/24    | Trusted orchestration + work machines               |
-| 20   | Services  | 10.10.20.0/24    | NAS, Plex, TVs, Chromebooks, Home Assistant         |
-| 30   | IoT       | 10.10.30.0/24    | Kasa plugs, Zigbee bridges, DNS relays              |
-| 40   | Guest     | 10.10.40.0/24    | Internet-only Wi-Fi                                 |
-| 99   | Mgmt      | 10.10.99.0/24    | Static access to router/switch                      |
+| VLAN | Name      | Subnet           | Purpose                                        | Configured By |
+|------|-----------|------------------|------------------------------------------------|---------------|
+| 10   | Admin     | 10.10.10.0/24    | Orchestration, trusted laptops                 | 🖐️ Router + Switch UI |
+| 20   | Services  | 10.10.20.0/24    | NAS, Dockge, Plex, phones, Chromebooks         | 🖐️ Router + Switch UI |
+| 30   | IoT       | 10.10.30.0/24    | Smart plugs, relays, filtering nodes           | 🖐️ Router + Switch UI |
+| 40   | Guest     | 10.10.40.0/24    | Internet-only clients                          | 🖐️ Router UI           |
+| 99   | Mgmt      | 10.10.99.0/24    | Switch + router admin                          | 🖐️ Switch config        |
 
 ---
 
 ## 📶 SSID-to-VLAN Mapping
 
-| SSID         | VLAN | Band   | Devices Served                               |
-|--------------|------|--------|----------------------------------------------|
-| `Homers`     | 10   | 5GHz   | Pop box, work laptops                        |
-| `Spicy Mac`  | 20   | 5GHz   | Phones, Chromebooks, streaming clients       |
-| `Smarties`   | 30   | 2.4GHz | Smart plugs, Zigbee devices                  |
+| SSID         | VLAN | Devices Served                       | Configured By |
+|--------------|------|--------------------------------------|---------------|
+| `Homers`     | 10   | Pop box, work machines               | 🖐️ Router UI  |
+| `Spicy Mac`  | 20   | Personal devices (phones, laptops)   | 🖐️ Router UI  |
+| `Smarties`   | 30   | Smart plugs, Zigbee endpoints        | 🖐️ Router UI  |
 
 ---
 
-## 🔌 Switch Port Map (Tenda TEG208E)
+## 🔌 Switch Port Assignments
 
-| Port | Connected Device(s)                  | VLAN | Tag Mode  |
-|------|---------------------------------------|------|-----------|
-| 1    | Trusted switch (Pop box + work PCs)  | 10   | Untagged  |
-| 2    | `raspi5`                             | 20   | Untagged  |
-| 3    | `nas`                                | 20   | Untagged  |
-| 4    | `raspi3`                             | 30   | Untagged  |
-| 5    | `raspi4`                             | 30   | Untagged  |
-| 6    | TV switch (SmartTV, GoogleTV)        | 20   | Untagged  |
-| 7    | Printer                               | 20   | Untagged  |
-| 8    | Router uplink                         | All  | Tagged    |
-
----
-
-## 🔐 Reverse Proxy Services (`popbox` / NGINX Proxy Manager)
-
-| URL                        | Backend Target          | Description                                |
-|----------------------------|--------------------------|---------------------------------------------|
-| `https://assist.home`      | `nas.home:8123`          | Home Assistant UI                          |
-| `https://plex.home`        | `nas.home:32400`         | Plex Web & Cast                            |
-| `https://dockge.home`      | `raspi5.home:5001`       | Dockge for `raspi5` containers             |
-| `https://dockge-nas.home`  | `nas.home:5002`          | Dockge for `nas.home`                      |
-| `https://kuma.home`        | `raspi5.home:3001`       | Uptime Kuma                                |
-| `https://raspi3.home`      | `raspi3.home`            | Pi-hole UI                                 |
-| `https://raspi4.home`      | `raspi4.home:8053`       | AdGuard Home                               |
-| `https://printer.home`     | `printer.home`           | Printer Web UI (if supported)              |
+| Port | Connection                      | VLAN | Configured By |
+|------|----------------------------------|------|----------------|
+| 1    | Pop box + work laptops (admin)   | 10   | 🖐️ Switch UI   |
+| 2    | `raspi5`                         | 20   | 🖐️ Switch UI   |
+| 3    | `nas`                            | 20   | 🖐️ Switch UI   |
+| 4    | `raspi3`                         | 30   | 🖐️ Switch UI   |
+| 5    | `raspi4`                         | 30   | 🖐️ Switch UI   |
+| 6    | TVs / GoogleTV (unmanaged)       | 20   | 🖐️ Switch UI   |
+| 7    | Printer                          | 20   | 🖐️ Switch UI   |
+| 8    | Router uplink                    | All  | 🖐️ Switch UI   |
 
 ---
 
-## 🧭 DNS Architecture
+## 🔐 NGINX Reverse Proxy Routes
 
-- Authoritative zone: `.home` served via `dnsmasq` on `popbox`
-- Recursive filtered resolution:
-  - 🟢 Primary: `raspi3.home` (Pi-hole + Unbound)
-  - 🔵 Secondary: `raspi4.home` (AdGuard Home)
-- Static DNS entries and DHCP managed via Ansible
-- VPN-friendly: Split-DNS adaptable for remote access
-
----
-
-## 🔄 IoT Control Pathways
-
-| Access Source    | Destination (IoT Devices – VLAN 30) | Ports / Protocols               | Purpose                          |
-|------------------|--------------------------------------|----------------------------------|----------------------------------|
-| Home Assistant    | Kasa plugs, Zigbee relays           | TCP/UDP 9999, 80, 443, 554       | Smart plug control               |
-| Mobile devices    | Kasa plugs                          | TCP/UDP 9999                     | App-based smart plug control     |
-| mDNS bridging (optional) | IoT devices across VLANs     | 5353 (UDP), multicast            | Discovery support                |
+| URL                        | Backend Target         | Description                      | Configured By |
+|----------------------------|-------------------------|-----------------------------------|---------------|
+| `https://assist.home`      | `nas:8123`              | Home Assistant                    | 🤖 NGINX via Ansible |
+| `https://plex.home`        | `nas:32400`             | Plex UI                           | 🤖              |
+| `https://dockge.home`      | `raspi5:5001`           | Dockge (raspi5)                   | 🤖              |
+| `https://dockge-nas.home`  | `nas:5002`              | Dockge (NAS)                      | 🤖              |
+| `https://dashboard.home`   | `popbox:7575`           | Homarr UI                         | 🤖              |
+| `https://raspi3.home`      | `raspi3`                | Pi-hole Admin                     | 🤖              |
+| `https://raspi4.home`      | `raspi4:8053`           | AdGuard Admin                     | 🤖              |
+| `https://printer.home`     | `printer`               | Printer Web UI                    | 🤖              |
 
 ---
 
-## 🛡️ UFW Rules per Device (Annotated)
+## 🧭 DNS + DHCP Design
 
-### 🔹 `popbox.home` (Admin – VLAN 10)
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-
-sudo ufw allow ssh                             # Secure shell for admin login
-sudo ufw allow 80,443/tcp                      # NGINX for HTTPS proxy
-sudo ufw allow 7575/tcp                        # Homarr dashboard
-sudo ufw allow from 10.10.20.0/24 to any port 443  # Allow proxy access from VLAN 20 clients
-```
+| Function            | Role                                 | Configured By |
+|---------------------|--------------------------------------|---------------|
+| `.home` domain      | Authored by `dnsmasq` on popbox      | 🤖 Ansible     |
+| Static IP leases    | Devices manually mapped              | 🤖 + 🖐️        |
+| Client filtering    | Pi-hole (`raspi3`) + AdGuard (`raspi4`) | 📝 YAML + GUI |
+| Upstream resolvers  | Unbound (recursive)                  | 📝            |
 
 ---
 
-### 🔹 `raspi5.home` (Services – VLAN 20)
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
+## 🔄 Home Assistant & IoT Control Routing
 
-sudo ufw allow ssh                             # Remote access
-sudo ufw allow 5001/tcp                        # Dockge UI
-sudo ufw allow 3001/tcp                        # Uptime Kuma
-sudo ufw allow 1883/tcp                        # Mosquitto MQTT
-sudo ufw allow from 10.10.10.0/24 to any port 5001,3001  # Admin access from `popbox`
-```
+| Source Device     | Target VLAN / Devices | Ports / Protocols                  | Configured By |
+|-------------------|-----------------------|------------------------------------|---------------|
+| Home Assistant    | VLAN 30 IoT devices   | TCP/UDP 9999, 80, 443, 554         | 🖐️ Router firewall |
+| Mobile (VLAN 20)  | Kasa smart plugs      | TCP/UDP 9999                       | 🖐️ Router firewall |
+| mDNS Reflection   | Optional Avahi bridge | UDP 5353, multicast                | 📝 Compose or Ansible container |
 
 ---
 
-### 🔹 `raspi3.home` (DNS Filter – VLAN 30)
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
+## 🛡️ UFW Rules (Annotated & Managed)
 
-sudo ufw allow ssh                             # Admin access
-sudo ufw allow 53/tcp                          # DNS over TCP
-sudo ufw allow 53/udp                          # DNS over UDP
-sudo ufw allow 80/tcp                          # Pi-hole Web UI
-sudo ufw allow from 10.10.10.0/24              # Allow queries from Admin VLAN
-sudo ufw allow from 10.10.20.0/24              # Allow from clients and HA
-```
+| Device           | UFW Applied | Configured By | Notes                      |
+|------------------|-------------|----------------|----------------------------|
+| `popbox`         | ✅           | 🤖 Ansible      | Admin node                 |
+| `raspi5`         | ✅           | 🤖 Ansible      | Dockge + Kuma              |
+| `raspi3`         | ✅           | 🤖 or 📝 shell   | Pi-hole DNS relay          |
+| `raspi4`         | ✅           | 🤖 or 📝 shell   | AdGuard Home relay         |
+| `nas` (Synology) | ❌ (DSM GUI) | 🛡️ DSM Firewall  | Uses Synology native tools |
 
 ---
 
-### 🔹 `raspi4.home` (IoT Relay – VLAN 30)
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
+## 🔹 Footnotes – Configuration Method Keys
 
-sudo ufw allow ssh                             # SSH management
-```
-
+- **¹** 🖐️ Configured manually via GUI or CLI (e.g. DSM, router, switch)
+- **²** 🤖 Provisioned using Ansible (host_vars, roles)
+- **³** 📝 Configured via static file (e.g. compose, YAML, bash scripts)
+- **⁴** 🛡️ Secured via DSM Firewall or GUI-native firewall
 
 ---
 
-## 📲 Home Assistant + Mobile ↔ IoT Pathways
-
-| Source            | Target (VLAN 30)   | Allowed Ports (TCP/UDP)      | Purpose                       |
-|-------------------|--------------------|-------------------------------|-------------------------------|
-| `nas.home` (HA)   | Kasa plugs / IoT   | 9999, 80, 443, 554, 5353      | Smart plug control + discovery|
-| Mobile Phone (Wi-Fi) | Kasa IoT         | Same                          | Kasa App control              |
-
-Recommended: Avahi or mDNS bridge container (optional) for device discovery across VLANs.
-
----
-
-SkyNet Prod 2 is active, segmented, secure, and orchestrated with surgical clarity. Let me know if you’d like this exported as a `.md` file, visual diagram, or integration with Homarr.
-
+SkyNet’s configuration strategy is now codified—clearly separating manual setup, automation pipelines, and GUI-managed interfaces. If you want any of this exported into an Ansible-ready inventory or a “rebuild from zero” doc, just say the word.
