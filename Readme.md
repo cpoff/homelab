@@ -1,114 +1,159 @@
 # 🤖 SkyNet – Full Topology & Infrastructure Map
 
-This is the fully updated **Prod 2** version of **SkyNet**, capturing:
+This is the comprehensive **Prod 2** map of **SkyNet**, now fully incorporating:
 
-- VLAN-aware segmentation across trusted, service, IoT, and guest zones
-- Accurate OS and hostname mapping across all Raspi nodes
-- Personal devices (Chromebooks) integrated on VLAN 20
-- Home Assistant and phone-based control over Kasa smart plugs (IoT)
-- 🔐 UFW firewall rules with full inline commentary
-- Clean reverse proxy and `.home` DNS with TLS termination
-
----
-
-## 🧠 Node Directory & Host Assignments
-
-| Hostname       | DNS Name            | IP Address     | OS / Type            | Role & Key Services                                           |
-|----------------|---------------------|----------------|----------------------|----------------------------------------------------------------|
-| `popbox`       | `popbox.home`       | 10.10.10.10    | Pop!_OS              | Admin core: NGINX Proxy, dnsmasq, Homarr                       |
-| `raspi5`       | `raspi5.home`       | 10.10.20.14    | Raspberry Pi OS      | Dockge, Uptime Kuma, Mosquitto                                 |
-| `raspi3`       | `raspi3.home`       | 10.10.30.53    | DietPi               | Pi-hole + Unbound DNS                                          |
-| `raspi4`       | `raspi4.home`       | 10.10.30.11    | DietPi               | AdGuard Home, Zigbee2MQTT, Prometheus, NodeRED                |
-| `nas`          | `nas.home`          | 10.10.20.10    | Synology DSM         | Plex, Home Assistant, Dockge                                   |
-|                | `assist.home`       | —              | DNS Alias            | HA UI (via `nas.home:8123`)                                    |
-|                | `plex.home`         | —              | DNS Alias            | Plex Web UI (`nas.home:32400`)                                 |
-|                | `dockge-nas.home`   | —              | DNS Alias            | NAS Docker UI (port 5002)                                      |
-| `printer`      | `printer.home`      | 10.10.20.21    | Network Printer       | LAN printing, optional web UI                                  |
-| `smarttv`      | `smarttv.home`      | 10.10.20.30    | Google TV             | Media playback and casting                                     |
-| `googletv`     | `googletv.home`     | 10.10.20.31    | Google TV HDMI        | Primary streaming device                                       |
-| `chromebook1`  | `cb1.home`          | 10.10.20.41    | ChromeOS              | Personal laptop #1                                             |
-| `chromebook2`  | `cb2.home`          | 10.10.20.42    | ChromeOS              | Personal laptop #2                                             |
-| `router`       | `router.home`       | 10.10.99.2     | TP-Link AX6600        | SSID bridge + tagged uplink                                    |
-| `switch`       | `switch.home`       | 10.10.99.1     | Tenda TEG208E         | Core VLAN switch                                               |
+- Finalized hostnames, VLANs, OS mappings, and physical layout
+- UFW firewall rule coverage with inline commentary for all applicable nodes
+- Secure inter-VLAN rules for Home Assistant + Kasa IoT control
+- Personal devices integrated cleanly into the Services zone
+- Reverse proxy endpoints, DNS mappings, and broadcast domain designations
 
 ---
 
-## 🧩 VLAN Schema
+## 🧠 Node Directory & DNS
 
-| VLAN | Name        | Subnet           | Purpose                                              |
-|------|-------------|------------------|-------------------------------------------------------|
-| 10   | Admin       | 10.10.10.0/24    | Orchestration + workstations                         |
-| 20   | Services    | 10.10.20.0/24    | NAS, Dockge, Plex, personal clients, mobile          |
-| 30   | IoT         | 10.10.30.0/24    | Smart plugs, Zigbee, DNS relay nodes                 |
-| 40   | Guest       | 10.10.40.0/24    | Isolated client Wi-Fi                                |
-| 99   | Management  | 10.10.99.0/24    | Switch and router interfaces                         |
-
----
-
-## 📶 Wi-Fi SSID → VLAN Mapping
-
-| SSID         | VLAN | Band   | Devices Served                                 |
-|--------------|------|--------|------------------------------------------------|
-| `Homers`     | 10   | 5GHz   | Work laptops, orchestration                    |
-| `Spicy Mac`  | 20   | 5GHz   | Phones, Chromebooks, Plex clients, Dockge UI   |
-| `Smarties`   | 30   | 2.4GHz | Smart plugs, sensors, ESP/Zigbee devices       |
+| Hostname       | DNS Name            | IP Address     | OS / Type          | Role & Services                                          |
+|----------------|---------------------|----------------|---------------------|-----------------------------------------------------------|
+| `popbox`       | `popbox.home`       | 10.10.10.10    | Pop!_OS             | Admin orchestrator: NGINX Proxy, dnsmasq, Homarr          |
+| `raspi5`       | `raspi5.home`       | 10.10.20.14    | Raspberry Pi OS     | Dockge, Uptime Kuma, Mosquitto                            |
+| `raspi3`       | `raspi3.home`       | 10.10.30.53    | DietPi              | Pi-hole + Unbound DNS                                     |
+| `raspi4`       | `raspi4.home`       | 10.10.30.11    | DietPi              | AdGuard Home, NodeRED, Zigbee2MQTT, Prometheus            |
+| `nas`          | `nas.home`          | 10.10.20.10    | Synology DSM        | Plex, Home Assistant, Dockge (with Synology Firewall)     |
+| `printer`      | `printer.home`      | 10.10.20.21    | HW Device           | Wired printer, driverless + web UI                        |
+| `smarttv`      | `smarttv.home`      | 10.10.20.30    | Google TV           | Streaming Plex, Chromecast                                |
+| `googletv`     | `googletv.home`     | 10.10.20.31    | Google TV HDMI      | Streaming HDMI stick                                      |
+| `chromebook1`  | `cb1.home`          | 10.10.20.41    | ChromeOS            | Personal laptop 1                                         |
+| `chromebook2`  | `cb2.home`          | 10.10.20.42    | ChromeOS            | Personal laptop 2                                         |
+| `router`       | `router.home`       | 10.10.99.2     | TP-Link AX6600      | Wi-Fi AP + uplink trunk                                   |
+| `switch`       | `switch.home`       | 10.10.99.1     | Tenda TEG208E       | Core switch with port-based VLAN segmentation             |
 
 ---
 
-## 🔌 TEG208E Switch Port Map
+## 🧩 VLANs & Subnet Purpose
 
-| Port | Connected Devices / Switches           | VLAN | Tagging  |
-|------|----------------------------------------|------|----------|
-| 1    | Pop box + work laptop switch (trusted) | 10   | Untagged |
-| 2    | `raspi5`                               | 20   | Untagged |
-| 3    | `nas`                                  | 20   | Untagged |
-| 4    | `raspi3`                               | 30   | Untagged |
-| 5    | `raspi4`                               | 30   | Untagged |
-| 6    | SmartTV + GoogleTV via unmanaged switch| 20   | Untagged |
-| 7    | Printer                                 | 20   | Untagged |
-| 8    | Uplink to AX6600 router                | All  | Tagged   |
+| VLAN | Name      | Subnet           | Purpose                                             |
+|------|-----------|------------------|------------------------------------------------------|
+| 10   | Admin     | 10.10.10.0/24    | Trusted orchestration + work machines               |
+| 20   | Services  | 10.10.20.0/24    | NAS, Plex, TVs, Chromebooks, Home Assistant         |
+| 30   | IoT       | 10.10.30.0/24    | Kasa plugs, Zigbee bridges, DNS relays              |
+| 40   | Guest     | 10.10.40.0/24    | Internet-only Wi-Fi                                 |
+| 99   | Mgmt      | 10.10.99.0/24    | Static access to router/switch                      |
 
 ---
 
-## 🔐 NGINX Proxy Routes (`popbox.home`)
+## 📶 SSID-to-VLAN Mapping
 
-| URL                        | Destination Target      | Description                                |
+| SSID         | VLAN | Band   | Devices Served                               |
+|--------------|------|--------|----------------------------------------------|
+| `Homers`     | 10   | 5GHz   | Pop box, work laptops                        |
+| `Spicy Mac`  | 20   | 5GHz   | Phones, Chromebooks, streaming clients       |
+| `Smarties`   | 30   | 2.4GHz | Smart plugs, Zigbee devices                  |
+
+---
+
+## 🔌 Switch Port Map (Tenda TEG208E)
+
+| Port | Connected Device(s)                  | VLAN | Tag Mode  |
+|------|---------------------------------------|------|-----------|
+| 1    | Trusted switch (Pop box + work PCs)  | 10   | Untagged  |
+| 2    | `raspi5`                             | 20   | Untagged  |
+| 3    | `nas`                                | 20   | Untagged  |
+| 4    | `raspi3`                             | 30   | Untagged  |
+| 5    | `raspi4`                             | 30   | Untagged  |
+| 6    | TV switch (SmartTV, GoogleTV)        | 20   | Untagged  |
+| 7    | Printer                               | 20   | Untagged  |
+| 8    | Router uplink                         | All  | Tagged    |
+
+---
+
+## 🔐 Reverse Proxy Services (`popbox` / NGINX Proxy Manager)
+
+| URL                        | Backend Target          | Description                                |
 |----------------------------|--------------------------|---------------------------------------------|
-| `https://dashboard.home`   | `popbox:7575`            | Homarr UI                                   |
-| `https://assist.home`      | `nas:8123`               | Home Assistant                              |
-| `https://plex.home`        | `nas:32400`              | Plex                                         |
-| `https://dockge.home`      | `raspi5:5001`            | Dockge (raspi5)                             |
-| `https://dockge-nas.home`  | `nas:5002`               | Dockge (NAS)                                |
-| `https://raspi3.home`      | `raspi3`                 | Pi-hole Admin                               |
-| `https://raspi4.home`      | `raspi4:8053`            | AdGuard Home UI                             |
-| `https://printer.home`     | `printer`                | Printer web admin (if available)            |
+| `https://assist.home`      | `nas.home:8123`          | Home Assistant UI                          |
+| `https://plex.home`        | `nas.home:32400`         | Plex Web & Cast                            |
+| `https://dockge.home`      | `raspi5.home:5001`       | Dockge for `raspi5` containers             |
+| `https://dockge-nas.home`  | `nas.home:5002`          | Dockge for `nas.home`                      |
+| `https://kuma.home`        | `raspi5.home:3001`       | Uptime Kuma                                |
+| `https://raspi3.home`      | `raspi3.home`            | Pi-hole UI                                 |
+| `https://raspi4.home`      | `raspi4.home:8053`       | AdGuard Home                               |
+| `https://printer.home`     | `printer.home`           | Printer Web UI (if supported)              |
 
 ---
 
-## 🛡️ UFW Rules (Sample – with Full Commentary)
+## 🧭 DNS Architecture
 
-### 🔹 `raspi5.home` (VLAN 20 – Dockge, Kuma)
-```bash
-sudo ufw default deny incoming                       # Block all incoming by default
-sudo ufw default allow outgoing                      # Allow all outbound traffic
+- Authoritative zone: `.home` served via `dnsmasq` on `popbox`
+- Recursive filtered resolution:
+  - 🟢 Primary: `raspi3.home` (Pi-hole + Unbound)
+  - 🔵 Secondary: `raspi4.home` (AdGuard Home)
+- Static DNS entries and DHCP managed via Ansible
+- VPN-friendly: Split-DNS adaptable for remote access
 
-sudo ufw allow ssh                                   # Allow SSH admin access
-sudo ufw allow 5001/tcp                              # Dockge web UI
-sudo ufw allow 3001/tcp                              # Uptime Kuma HTTP UI
-sudo ufw allow from 10.10.10.10 to any port 5001,3001  # Allow access from Admin node (Popbox)
-```
+---
 
-### 🔹 `raspi3.home` (VLAN 30 – DNS)
+## 🔄 IoT Control Pathways
+
+| Access Source    | Destination (IoT Devices – VLAN 30) | Ports / Protocols               | Purpose                          |
+|------------------|--------------------------------------|----------------------------------|----------------------------------|
+| Home Assistant    | Kasa plugs, Zigbee relays           | TCP/UDP 9999, 80, 443, 554       | Smart plug control               |
+| Mobile devices    | Kasa plugs                          | TCP/UDP 9999                     | App-based smart plug control     |
+| mDNS bridging (optional) | IoT devices across VLANs     | 5353 (UDP), multicast            | Discovery support                |
+
+---
+
+## 🛡️ UFW Rules per Device (Annotated)
+
+### 🔹 `popbox.home` (Admin – VLAN 10)
 ```bash
 sudo ufw default deny incoming
-sudo ufw allow ssh                                   # Remote terminal
-sudo ufw allow 53                                   # DNS over TCP/UDP
-sudo ufw allow 80                                   # Pi-hole Admin UI
-sudo ufw allow from 10.10.10.0/24                   # Admin VLAN access
-sudo ufw allow from 10.10.20.0/24                   # Services VLAN (HA, phones, TVs)
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                             # Secure shell for admin login
+sudo ufw allow 80,443/tcp                      # NGINX for HTTPS proxy
+sudo ufw allow 7575/tcp                        # Homarr dashboard
+sudo ufw allow from 10.10.20.0/24 to any port 443  # Allow proxy access from VLAN 20 clients
 ```
 
-> All other devices follow the same pattern: open minimal inbound services + allow required inter-VLAN access with clear commentary.
+---
+
+### 🔹 `raspi5.home` (Services – VLAN 20)
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                             # Remote access
+sudo ufw allow 5001/tcp                        # Dockge UI
+sudo ufw allow 3001/tcp                        # Uptime Kuma
+sudo ufw allow 1883/tcp                        # Mosquitto MQTT
+sudo ufw allow from 10.10.10.0/24 to any port 5001,3001  # Admin access from `popbox`
+```
+
+---
+
+### 🔹 `raspi3.home` (DNS Filter – VLAN 30)
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                             # Admin access
+sudo ufw allow 53/tcp                          # DNS over TCP
+sudo ufw allow 53/udp                          # DNS over UDP
+sudo ufw allow 80/tcp                          # Pi-hole Web UI
+sudo ufw allow from 10.10.10.0/24              # Allow queries from Admin VLAN
+sudo ufw allow from 10.10.20.0/24              # Allow from clients and HA
+```
+
+---
+
+### 🔹 `raspi4.home` (IoT Relay – VLAN 30)
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                             # SSH management
+```
+
 
 ---
 
