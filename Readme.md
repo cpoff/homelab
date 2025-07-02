@@ -1,4 +1,4 @@
-# 🤖 SkyNet – Full Topology & Infrastructure Map (📌 Prod 2 + UFW Coverage + Configuration Method Footnotes)
+# 🤖 SkyNet – Full Topology & Infrastructure Map (📌 Prod 2)
 
 Each component of this architecture is annotated with a superscript footnote 🔹 indicating its intended configuration method:
 - 🖐️ **Manually configured via GUI or CLI**
