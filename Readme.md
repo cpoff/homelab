@@ -110,6 +110,88 @@ Each component of this architecture is annotated with a superscript footnote �
 | `raspi4`         | ✅           | 🤖 or 📝 shell   | AdGuard Home relay         |
 | `nas` (Synology) | ❌ (DSM GUI) | 🛡️ DSM Firewall  | Uses Synology native tools |
 
+# 🔐 UFW Firewall Configuration for SkyNet – Full Annotated Rule Sets
+# Applied to: Devices running Raspberry Pi OS, Pop!_OS, DietPi (excludes NAS)
+# Method: Provision via Ansible (preferred) or manual script on device startup
+
+# =======================================
+# 🧠 popbox.home (Admin Node - VLAN 10)
+# OS: Pop!_OS
+# =======================================
+
+sudo ufw default deny incoming            # Drop all unsolicited inbound packets
+sudo ufw default allow outgoing           # Allow all outbound by default
+
+sudo ufw allow ssh                        # Enable SSH (port 22) for remote login
+sudo ufw allow 80,443/tcp                 # NGINX: reverse proxy frontend (HTTP/S)
+sudo ufw allow 7575/tcp                   # Homarr dashboard (local admin UI)
+
+# Allow VLAN 20 devices (e.g. Chromebooks, phones, HA) to reach reverse proxy
+sudo ufw allow from 10.10.20.0/24 to any port 443 proto tcp \
+  comment 'Allow VLAN 20 clients access to TLS proxy'
+
+# Optional: allow DNS requests from LAN
+sudo ufw allow 53                        # dnsmasq responder on popbox (optional)
+
+# =======================================
+# 📦 raspi5.home (Containers + Telemetry - VLAN 20)
+# OS: Raspberry Pi OS
+# =======================================
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                        # SSH for administration
+sudo ufw allow 5001/tcp                   # Dockge container manager UI
+sudo ufw allow 3001/tcp                   # Uptime Kuma dashboard
+sudo ufw allow 1883/tcp                   # Mosquitto MQTT broker (if used)
+
+# Allow access to Dockge from Popbox (Admin VLAN)
+sudo ufw allow from 10.10.10.0/24 to any port 5001,3001 proto tcp \
+  comment 'Admin access to Dockge + Kuma from VLAN 10'
+
+# =======================================
+# 🎯 raspi3.home (Pi-hole + Unbound - VLAN 30)
+# OS: DietPi
+# =======================================
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                        # Headless management
+sudo ufw allow 53                         # DNS over TCP/UDP
+sudo ufw allow 80                         # Pi-hole Web UI
+
+# Allow queries from Admin (popbox), Services (Chromebooks, phones), HA
+sudo ufw allow from 10.10.10.0/24         # Admin VLAN
+sudo ufw allow from 10.10.20.0/24         # Services VLAN
+
+# =======================================
+# 🧮 raspi4.home (AdGuard Home + Zigbee - VLAN 30)
+# OS: DietPi
+# =======================================
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow ssh                        # Remote config terminal
+sudo ufw allow 8053/tcp                   # AdGuard Home UI
+sudo ufw allow 53                         # DNS over TCP/UDP
+
+# Allow visibility from Admin + Services zones
+sudo ufw allow from 10.10.10.0/24         # Admin
+sudo ufw allow from 10.10.20.0/24         # Clients + HA
+
+# =======================================
+# 🧠 Notes
+# =======================================
+# - Synology NAS is managed via its own firewall system (not UFW)
+# - Printers, TVs, Chromebooks, and mobile devices don’t run UFW-capable OS
+# - Inter-VLAN permissions enforced via router ACLs (not handled in UFW)
+# - Consider enabling UFW logging: sudo ufw logging on
+# - For Ansible, translate each rule into tasks using ufw Ansible module or shell tasks
+
+
 ---
 
 ## 🔹 Footnotes – Configuration Method Keys
