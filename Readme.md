@@ -1,69 +1,95 @@
-# ☁️ SkyNet Topology Overview
+# ☁️ SkyNet Homelab – Full Topology & Device Inventory
+
+A complete, consolidated view of SkyNet’s infrastructure—including every device, VLAN, DNS name, SSID, service, and switch port assignment. Documented with clarity, hardened with intent.
 
 ---
 
-## 🖥️ Device Lineup & Local DNS
+## 🧠 Device Inventory & DNS Mapping
 
-| Hostname     | DNS Name           | IP Address     | Role / Function               | Key Services & Apps                                             |
-|--------------|--------------------|----------------|-------------------------------|-----------------------------------------------------------------|
-| `popbox`     | `popbox.home`      | 10.10.10.10    | Admin Core / Reverse Proxy    | Ansible, Homarr, Portainer, dnsmasq, NGINX Proxy Manager, Netdata |
-| `raspi5`     | `raspi5.home`      | 10.10.20.14    | Container Node                | Vaultwarden, Mosquitto, Uptime Kuma, Home Assistant (opt)       |
-| `nas`        | `nas.home`         | 10.10.20.10    | File & Media Server           | Plex, Synology Drive, Tautulli (opt), SMB/NFS Shares            |
-| `raspi3`     | `dns.home`         | 10.10.30.53    | DNS Relay + Filtering Node    | Pi-hole, Unbound, Tailscale                                     |
-| `raspi4`     | `pi4util.home`     | 10.10.30.11    | Utility Node / Telemetry      | AdGuard (8053), Zigbee2MQTT, NodeRED, Prometheus Exporters      |
-| `router`     | `router.home`      | 10.10.99.2     | Edge Gateway / DHCP fallback  | WAN uplink, VLAN bridge, Wi-Fi SSIDs                            |
-| `switch`     | `switch.home`      | 10.10.99.1     | Core VLAN Switch              | Tagged uplinks, untagged port access for each VLAN              |
-
----
-
-## 🧩 VLAN Configuration
-
-| VLAN ID | Name        | Subnet           | Purpose                              | DHCP Source              |
-|---------|-------------|------------------|---------------------------------------|---------------------------|
-| 10      | Admin       | 10.10.10.0/24    | Secure orchestration & control plane | `dnsmasq` on `popbox.home` |
-| 20      | Services    | 10.10.20.0/24    | Containers, NAS, web UIs             | DHCP reservation or relay |
-| 30      | IoT         | 10.10.30.0/24    | Smart plugs, DNS relays, Zigbee      | DHCP relay / static maps  |
-| 40      | Guest       | 10.10.40.0/24    | Internet-only network                | Router (fallback DHCP)    |
-| 99      | Mgmt        | 10.10.99.0/24    | Router, switch, AP management        | Static IPs only           |
-
-VLAN trunking is enforced from `router` → `switch`, then tagged/untagged per-port.
+| Hostname     | DNS Name          | IP Address     | Hardware              | Role / Function                        | Key Services                                        |
+|--------------|-------------------|----------------|------------------------|-----------------------------------------|-----------------------------------------------------|
+| `popbox`     | `popbox.home`     | 10.10.10.10    | Dell XPS / Pop!_OS     | Admin core, orchestration, HTTPS proxy | Ansible, dnsmasq, Homarr, Portainer, NGINX Proxy    |
+| `raspi5`     | `raspi5.home`     | 10.10.20.14    | Raspberry Pi 5         | Services stack                         | Vaultwarden, Mosquitto, Home Assistant, Uptime Kuma |
+| `nas`        | `nas.home`        | 10.10.20.10    | Synology NAS           | Media storage and sharing              | Plex, Synology Drive, SMB/NFS, Tautulli             |
+| `raspi3`     | `dns.home`        | 10.10.30.53    | Raspberry Pi 3         | Primary DNS & filtering                | Pi-hole, Unbound, Tailscale                         |
+| `raspi4`     | `pi4util.home`    | 10.10.30.11    | Raspberry Pi 4         | IoT telemetry & DNS backup             | AdGuard (8053), NodeRED, Zigbee2MQTT, Prometheus    |
+| `router`     | `router.home`     | 10.10.99.2     | TP-Link AX6600 AX90    | Gateway + wireless AP                  | Internet uplink, DHCP fallback                      |
+| `switch`     | `switch.home`     | 10.10.99.1     | Tenda TEG208E          | Core switch w/ VLAN trunking           | Port-based VLAN segmentation                        |
+| `printer`    | `printer.home`    | 10.10.20.21    | Wired Network Printer  | Office & remote printing               | Accessible via web UI (if enabled)                  |
+| `smarttv`    | `smarttv.home`    | 10.10.20.30    | Google TV Smart TV     | Streaming & casting                    | Plex client, Chromecast support                     |
+| `googletv`   | `googletv.home`   | 10.10.20.31    | Google TV Device       | Streaming HDMI device                  | Cast target, YouTube TV, Netflix, etc.              |
 
 ---
 
-## 📶 Wireless SSIDs and VLAN Mapping
+## 🧩 VLAN Assignment & Subnet Roles
 
-| SSID Name     | Band     | VLAN | Broadcast | Auth Method         | Device Class                     |
-|---------------|----------|------|-----------|----------------------|----------------------------------|
-| `AdminLAN`    | 5GHz     | 10   | Hidden    | WPA2/3 Enterprise    | Admin laptops, tablets           |
-| `HomeDevices` | 5GHz     | 20   | Visible   | WPA2 Personal        | Phones, desktops, streaming gear |
-| `SmartMesh`   | 2.4GHz   | 30   | Hidden    | WPA2 Personal        | IoT sensors, smart plugs         |
-
-> **Note:** TP-Link Archer AX90 does not support per-SSID VLAN tagging natively. SSID traffic segmentation must happen via switch trunking or upgrading to VLAN-aware APs like the Omada EAP series.
-
----
-
-## 🔐 HTTPS Access via NGINX Proxy Manager (`popbox.home`)
-
-All proxied services are accessible via `https://<name>.home`:
-
-| Service            | Reverse Proxy URL           | Internal Host             |
-|--------------------|-----------------------------|----------------------------|
-| Homarr             | `https://dashboard.home`    | `popbox.home:7575`         |
-| Vaultwarden        | `https://vaultwarden.home`  | `raspi5.home:80`           |
-| Uptime Kuma        | `https://kuma.home`         | `raspi5.home:3001`         |
-| Pi-hole            | `https://dns.home`          | `dns.home`                 |
-| AdGuard            | `https://adguard.home`      | `pi4util.home:8053`        |
-
-SSL certs via Let's Encrypt DNS-01 challenge or internal CA. TLS enforced globally.
+| VLAN ID | Name        | Subnet           | Purpose                            | DHCP Source              |
+|---------|-------------|------------------|-------------------------------------|---------------------------|
+| 10      | Admin       | 10.10.10.0/24    | Secure orchestration & control     | `dnsmasq` on `popbox`     |
+| 20      | Services    | 10.10.20.0/24    | Media, containers, streaming stack | DHCP reservations / static|
+| 30      | IoT         | 10.10.30.0/24    | Smart devices + DNS filtering      | Relay or static mappings  |
+| 40      | Guest       | 10.10.40.0/24    | Isolated Wi-Fi for visitors        | Router fallback           |
+| 99      | Mgmt        | 10.10.99.0/24    | Infrastructure config only         | Static IPs                |
 
 ---
 
-## 🧭 DNS Handling
+## 📶 SSID to VLAN Mapping (Wi-Fi Segmentation)
 
-- **Authoritative DNS & DHCP**: `popbox.home` via `dnsmasq`
-- **DNS Filtering**: Primary = `dns.home` (Pi-hole), Secondary = `pi4util.home` (AdGuard Home)
-- **Name Resolution**: `.home` domain mapped for all devices; optional entries in `/etc/hosts` or pushed via Ansible
+| SSID         | Band     | VLAN | Hidden | Auth Type         | Connected Device Types                |
+|--------------|----------|------|--------|--------------------|----------------------------------------|
+| `Homers`     | 5GHz     | 10   | Yes    | WPA2/3 Enterprise  | Admin laptops, orchestration gear      |
+| `Spicy Mac`  | 5GHz     | 20   | No     | WPA2 Personal      | Phones, tablets, smart TVs, printers   |
+| `Smarties`   | 2.4GHz   | 30   | Yes    | WPA2 Personal      | Smart plugs, sensors, Zigbee devices   |
+
+> *Note:* Since the Archer AX90 lacks native VLAN support per SSID, wired segmentation is enforced via switch configuration.
 
 ---
 
-If you'd like, I can bundle this into a printable `.md` file, generate a visual network map, or scaffold it into your playbook repo under `docs/topology.md`. SkyNet is now encrypted, segmented, and fully self-aware.
+## 🔌 Switch Port-to-Device Map (Tenda TEG208E)
+
+| Port | Device             | VLAN | Tag Mode  |
+|------|---------------------|------|-----------|
+| 1    | `popbox`            | 10   | Untagged  |
+| 2    | `raspi5`            | 20   | Untagged  |
+| 3    | `nas`               | 20   | Untagged  |
+| 4    | `raspi3`            | 30   | Untagged  |
+| 5    | `raspi4`            | 30   | Untagged  |
+| 6    | `smarttv`           | 20   | Untagged  |
+| 7    | `printer`           | 20   | Untagged  |
+| 8    | `router` (uplink)   | 10/20/30/40/99 | Tagged |
+
+---
+
+## 🔐 HTTPS Reverse Proxy (via NGINX Proxy Manager on `popbox.home`)
+
+| Friendly URL               | Backend Host         | Description                            |
+|----------------------------|----------------------|-----------------------------------------|
+| `https://dashboard.home`   | `popbox:7575`        | Homarr dashboard                        |
+| `https://vaultwarden.home`| `raspi5`             | Password manager                        |
+| `https://kuma.home`        | `raspi5:3001`        | Uptime Kuma monitoring UI               |
+| `https://dns.home`         | `raspi3`             | Pi-hole admin portal                    |
+| `https://adguard.home`     | `raspi4:8053`        | AdGuard Home filtering                  |
+| `https://printer.home`     | `printer`            | Printer UI (if supported)               |
+
+> TLS certs issued via Let’s Encrypt (DNS-01) or custom internal CA. HTTP access is force-redirected to HTTPS.
+
+---
+
+## 🧭 DNS + Name Resolution Strategy
+
+- Authoritative DNS: `dnsmasq` on `popbox.home` for `.home` domain
+- Primary resolver: `dns.home` (Pi-hole + Unbound)
+- Secondary backup: `pi4util.home` (AdGuard Home)
+- All nodes registered as static hosts in `dnsmasq.hosts` (Ansible-managed)
+- Optional `/etc/hosts` on admin nodes for emergency LAN resolution
+
+---
+
+SkyNet is now fully documented and proudly operational:
+- Layered DNS + TLS
+- Clean VLAN boundaries
+- Wire-speed segmentation
+- Local service discovery
+- Declarative infrastructure
+
+Let me know if you'd like a Markdown export, Homarr tile preset JSON, or rendered network diagram next.
