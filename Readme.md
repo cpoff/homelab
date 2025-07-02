@@ -1,4 +1,4 @@
-# ☁️ SkyNet Homelab – Full Topology & Device Inventory (Dockge Integrated)
+# ☁️ SkyNet – Full Topology & Device Inventory
 
 This is your fully up-to-date SkyNet reference, now including **Dockge** for container monitoring with built-in Watchtower support. Your infrastructure is now declarative, observable, secure, and highly automatable.
 
@@ -9,9 +9,9 @@ This is your fully up-to-date SkyNet reference, now including **Dockge** for con
 | Hostname     | DNS Name          | IP Address     | Hardware              | Role / Function                        | Key Services                                              |
 |--------------|-------------------|----------------|------------------------|-----------------------------------------|-----------------------------------------------------------|
 | `popbox`     | `popbox.home`     | 10.10.10.10    | Dell XPS / Pop!_OS     | Admin core, orchestration, HTTPS proxy | Ansible, dnsmasq, Homarr, Portainer, NGINX Proxy Manager  |
-| `raspi5`     | `raspi5.home`     | 10.10.20.14    | Raspberry Pi 5         | Services + container ops                | Mosquitto, Uptime Kuma, **Dockge**                        |
+| `raspi5`     | `raspi5.home`     | 10.10.20.14    | Raspberry Pi 5         | Services + container ops                | Mosquitto, Uptime Kuma, Dockge                        |
 |              | `dockge.home`     |                |                        | DNS alias for container UI             | Dockge (port 5001)                                        |
-| `nas`        | `nas.home`        | 10.10.20.10    | Synology NAS           | Media + home automation stack           | Plex, Synology Drive, SMB/NFS, **Home Assistant**, Tautulli |
+| `nas`        | `nas.home`        | 10.10.20.10    | Synology NAS           | Media + home automation stack           | Plex, Synology Drive, SMB/NFS, *Home Assistant, Tautulli |
 |              | `assist.home`     |                |                        | DNS alias → `nas.home:8123`            | Home Assistant                                            |
 |              | `plex.home`       |                |                        | DNS alias → `nas.home:32400`           | Plex                                                      |
 | `raspi3`     | `dns.home`        | 10.10.30.53    | Raspberry Pi 3         | Primary DNS + filtering                 | Pi-hole, Unbound, Tailscale                               |
