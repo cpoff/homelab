@@ -1,6 +1,6 @@
-# ☁️ SkyNet – Full Topology & Device Inventory (Updated)
+# ☁️ SkyNet Homelab – Full Topology & Device Inventory (Updated)
 
-Your streamlined and declarative view of SkyNet’s infrastructure—now reflecting the removal of Vaultwarden from the stack. This update includes all nodes, VLANs, DNS names, SSIDs, switch port layout, and secure proxy routing—clean, clear, and built with intent.
+All current device roles, VLANs, local DNS assignments, SSIDs, and reverse proxy mappings—with **Vaultwarden removed** and **Home Assistant running on the Synology NAS** as `assist.home`.
 
 ---
 
@@ -9,13 +9,13 @@ Your streamlined and declarative view of SkyNet’s infrastructure—now reflect
 | Hostname     | DNS Name          | IP Address     | Hardware              | Role / Function                        | Key Services                                        |
 |--------------|-------------------|----------------|------------------------|-----------------------------------------|-----------------------------------------------------|
 | `popbox`     | `popbox.home`     | 10.10.10.10    | Dell XPS / Pop!_OS     | Admin core, orchestration, HTTPS proxy | Ansible, dnsmasq, Homarr, Portainer, NGINX Proxy    |
-| `raspi5`     | `raspi5.home`     | 10.10.20.14    | Raspberry Pi 5         | Services stack                         | Mosquitto, Home Assistant (opt), Uptime Kuma        |
-| `nas`        | `nas.home`        | 10.10.20.10    | Synology NAS           | Media storage and sharing              | Plex, Synology Drive, SMB/NFS, Tautulli             |
+| `raspi5`     | `raspi5.home`     | 10.10.20.14    | Raspberry Pi 5         | Services stack                         | Mosquitto, Uptime Kuma (port 3001)                  |
+| `nas`        | `nas.home`        | 10.10.20.10    | Synology NAS           | Media storage + Home Automation        | Plex, Synology Drive, SMB/NFS, **Home Assistant**, Tautulli |
 | `raspi3`     | `dns.home`        | 10.10.30.53    | Raspberry Pi 3         | Primary DNS & filtering                | Pi-hole, Unbound, Tailscale                         |
 | `raspi4`     | `pi4util.home`    | 10.10.30.11    | Raspberry Pi 4         | IoT telemetry & DNS backup             | AdGuard (8053), NodeRED, Zigbee2MQTT, Prometheus    |
 | `router`     | `router.home`     | 10.10.99.2     | TP-Link AX6600 AX90    | Gateway + wireless AP                  | Internet uplink, DHCP fallback                      |
 | `switch`     | `switch.home`     | 10.10.99.1     | Tenda TEG208E          | Core switch w/ VLAN trunking           | Port-based VLAN segmentation                        |
-| `printer`    | `printer.home`    | 10.10.20.21    | Wired Network Printer  | Office & remote printing               | Accessible via web UI (if enabled)                  |
+| `printer`    | `printer.home`    | 10.10.20.21    | Wired Network Printer  | Office & remote printing               | Accessible via UI (if enabled)                      |
 | `smarttv`    | `smarttv.home`    | 10.10.20.30    | Google TV Smart TV     | Streaming & casting                    | Plex client, Chromecast support                     |
 | `googletv`   | `googletv.home`   | 10.10.20.31    | Google TV HDMI Device  | Streaming HDMI device                  | Cast target, YouTube TV, Netflix, etc.              |
 
@@ -41,9 +41,11 @@ Your streamlined and declarative view of SkyNet’s infrastructure—now reflect
 | `Spicy Mac`  | 5GHz     | 20   | No     | WPA2 Personal      | Phones, tablets, smart TVs, printers   |
 | `Smarties`   | 2.4GHz   | 30   | Yes    | WPA2 Personal      | Smart plugs, ESPHome, Zigbee sensors   |
 
+> *Note: VLAN tagging is enforced via switch configuration due to AX90 limitations.*
+
 ---
 
-## 🔌 Switch Port-to-Device Map (TEG208E)
+## 🔌 Switch Port-to-Device Map (Tenda TEG208E)
 
 | Port | Device             | VLAN | Tag Mode  |
 |------|---------------------|------|-----------|
@@ -60,23 +62,24 @@ Your streamlined and declarative view of SkyNet’s infrastructure—now reflect
 
 ## 🔐 HTTPS Reverse Proxy (NGINX Proxy Manager on `popbox.home`)
 
-| Internal URL               | Backend Host         | Description                            |
-|----------------------------|----------------------|-----------------------------------------|
-| `https://dashboard.home`   | `popbox:7575`        | Homarr dashboard                        |
-| `https://kuma.home`        | `raspi5:3001`        | Uptime Kuma monitoring                  |
-| `https://dns.home`         | `raspi3`             | Pi-hole admin UI                        |
-| `https://adguard.home`     | `pi4util:8053`       | AdGuard Home DNS filtering              |
-| `https://printer.home`     | `printer`            | Printer UI (if available)               |
+| Internal URL              | Backend Host        | Description                         |
+|---------------------------|---------------------|-------------------------------------|
+| `https://dashboard.home`  | `popbox:7575`       | Homarr dashboard                    |
+| `https://assist.home`     | `nas:8123`          | **Home Assistant** web UI           |
+| `https://kuma.home`       | `raspi5:3001`       | Uptime Kuma                         |
+| `https://dns.home`        | `raspi3`            | Pi-hole admin portal                |
+| `https://adguard.home`    | `pi4util:8053`      | AdGuard Home                        |
+| `https://printer.home`    | `printer`           | Printer UI (if supported)           |
 
 ---
 
-## 🧭 DNS & Name Resolution
+## 🧭 DNS Strategy & Name Resolution
 
-- Local `.home` zone managed via `dnsmasq` on `popbox`
-- Static hostnames resolved by `dns.home` (Pi-hole) and `pi4util.home` (AdGuard)
-- DNSSEC and DNS-over-HTTPS filtering handled locally
-- Entries maintained via Ansible, with `/etc/hosts` fallback on critical nodes
+- `.home` domain authoritative via `dnsmasq` on `popbox`
+- Pi-hole (`dns.home`) and AdGuard (`pi4util.home`) act as local resolvers
+- All hostnames managed in Ansible-driven static maps
+- Split DNS optional via hosts override or external zone proxying
 
 ---
 
-This layout reflects the most current and secure state of SkyNet—no extraneous services, tightly segmented, and ready for automation. Let me know if you want a clean export or would like to reassign that freed-up port on `raspi5` to another project.
+SkyNet is humming: reverse-proxied, service-aware, and stripped of any bloat. Let me know if you’d like a Markdown file export, a visual network diagram, or updated `host_vars` scaffolding next.
