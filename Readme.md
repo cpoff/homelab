@@ -1,4 +1,4 @@
-# 🤖 SkyNet – Full Topology & Infrastructure Map (Prod 1 – IoT Access + Personal Devices + UFW Commentary)
+# 🤖 SkyNet – Full Topology & Infrastructure Map
 
 This snapshot represents the finalized “**Prod 1**” configuration of **SkyNet**, incorporating:
 
