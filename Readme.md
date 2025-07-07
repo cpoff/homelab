@@ -154,4 +154,52 @@ _No Avahi or multicast reflection used. All traffic is routed and permissioned e
 
 ---
 
+# 🧠 Devices Hosting Services — Prod 2 Summary  
+Only includes devices that **actively host services** accessible via network (web UI, automation, orchestration, media, DNS, etc.)
+
+---
+
+## 💼 Admin + Orchestration
+
+| Hostname     | Device           | IP            | Services Hosted                                     |
+|--------------|------------------|---------------|----------------------------------------------------|
+| `popbox`     | Dell XPS         | 10.10.10.11   | `dnsmasq` (.home zone), NGINX proxy, Homarr, Ansible |
+
+---
+
+## 🖥️ Media + Automation
+
+| Hostname     | Device           | IP            | Services Hosted                                     |
+|--------------|------------------|---------------|----------------------------------------------------|
+| `nas`        | Synology DSM     | 10.10.20.10   | Jellyfin, Home Assistant, Docker containers        |
+| `raspi5`     | Raspberry Pi 4   | 10.10.20.14   | Dockge, Uptime Kuma, Mosquitto MQTT                |
+
+---
+
+## 🌐 DNS & Filtering
+
+| Hostname     | Device           | IP            | Services Hosted                                     |
+|--------------|------------------|---------------|----------------------------------------------------|
+| `raspi3`     | Raspberry Pi 3   | 10.10.30.53   | Technitium DNS (ad blocking + recursive resolution) |
+
+---
+
+## 🖨️ Peripheral UI
+
+| Hostname     | Device           | IP            | Services Hosted                                     |
+|--------------|------------------|---------------|----------------------------------------------------|
+| `printer`    | Network Printer  | 10.10.20.21   | Basic printer UI / web control panel               |
+
+---
+
+## 🔧 Reserved Node
+
+| Hostname     | Device           | IP            | Status                                             |
+|--------------|------------------|---------------|----------------------------------------------------|
+| `raspi4`     | Raspberry Pi 4   | 10.10.30.11   | ✅ Powered but idle — reserved for utility/experiments |
+
+---
+
+These are the **only active service hosts** in your Prod 2 topology. Client devices like `desky.home`, smart TVs, and Chromebooks do not host services—they consume them. 
+
 SkyNet is fully segmented, routable, monitorable, documented, and extensible—with install clarity and administrative sanity baked in. If you want this exported as a Markdown file, install script, or Ansible skeleton, I’ve got you covered.
