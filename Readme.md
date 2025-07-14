@@ -1,125 +1,85 @@
 # 🧠 SkyNet — Full Topology Map  
-📌 **Prod 3 Snapshot — With Cloudflared Integration & HTTPS Automation**  
-🎯 Latest Enhancements:
-- Public domain `cpoff.com` now active across the stack  
-- Internal services securely exposed via **Cloudflared Tunnel**  
-- HTTPS automated via **NGINX Proxy Manager + Let’s Encrypt**  
-- Node-RED introduced for MQTT-driven visual automation  
-- `dietbox` elevated as full orchestration host  
-- `dellbox` officially retired for good
-
----
-
-## 🌐 Domain + Security Architecture
-
-| Layer                 | Function                                            |
-|-----------------------|-----------------------------------------------------|
-| 🔐 HTTPS Certs        | Auto-managed by NGINX Proxy Manager using Let’s Encrypt  
-| ☁️ Cloudflared Tunnel | Exposes internal services (e.g. Plex, HA) via `cpoff.com` subdomains  
-| 🧠 DNS Routing        | `.home` domain stays for internal LAN use, while `*.cpoff.com` serves external access  
-| 🚫 Zero Trust (optional) | Add access rules for services via Cloudflare's security layer  
-
----
-
-### 🔁 Example External Routes
-
-| Public Subdomain       | Internal Host         | Purpose                      |
-|------------------------|------------------------|------------------------------|
-| `plex.cpoff.com`       | `nas:32400`            | External Plex access         |
-| `assist.cpoff.com`     | `nas:8123`             | Home Assistant dashboard     |
-| `dashboard.cpoff.com`  | `dietbox:7575`         | Homarr dashboard             |
-| `dockge.cpoff.com`     | `raspi5:5001`          | Docker manager UI            |
-| `kuma.cpoff.com`       | `dietbox`              | Uptime monitor               |
-
-All SSL certs are **auto-renewed** by NGINX Proxy Manager using Let’s Encrypt.
+📌 **Prod 3 Snapshot – Streamlined, Secure, and Fully Internal**  
+🎯 Focused on fast local routing, fully private `.home` DNS records, and centralized headless services
 
 ---
 
 ## 🔐 VLAN Assignment Summary
 
-| VLAN | Label       | Subnet           | Purpose                                            |
-|------|-------------|------------------|----------------------------------------------------|
-| 10   | Trusted     | 10.10.10.0/24    | GUI desktops and orchestration clients             |
-| 20   | IoT         | 10.10.20.0/24    | Smart hardware, Kasa devices, MQTT endpoints       |
-| 30   | Guest       | 10.10.30.0/24    | Internet-only Wi-Fi                                |
-| 99   | Services    | 10.10.99.0/24    | NAS, DNS, router, switch, utility Pi nodes         |
+| VLAN | Label       | Subnet           | Purpose                                                      |
+|------|-------------|------------------|--------------------------------------------------------------|
+| 10   | Trusted     | 10.10.10.0/24    | GUI desktops, Plex clients, orchestration nodes              |
+| 20   | IoT         | 10.10.20.0/24    | MQTT endpoints, Smart TVs, Kasa devices                      |
+| 30   | Guest       | 10.10.30.0/24    | Internet-only Wi-Fi clients                                  |
+| 99   | Services    | 10.10.99.0/24    | NAS, DNS server, staging Pi, router, switch                  |
 
 ---
 
-## 🧮 Full Device Inventory
+## 🧮 Device Inventory (By VLAN)
 
-### 🟩 Trusted VLAN – GUI Clients
+### 🟩 Trusted VLAN — GUI & Clients
 
-| Hostname       | Device / OS              | Role                                                 |
-|----------------|---------------------------|------------------------------------------------------|
-| `dietbox`      | HP EliteDesk / DietPi     | Headless service node: Proxy, MQTT, Node-RED, Grafana, Netdata  
-| `minibox`      | MiniPC / Ubuntu + Win11   | GUI desktop: Plex client, HA interaction            |
-| `chromebook1`  | ChromeOS                  | Browser-based services                              |
-| `chromebook2`  | ChromeOS                  | Browser-based services                              |
+| Hostname       | Device / OS              | Role / Notes                                           |
+|----------------|---------------------------|--------------------------------------------------------|
+| `dietbox`      | HP EliteDesk / DietPi     | Headless host: Proxy, MQTT broker, Node-RED, Grafana   |
+| `minibox`      | MiniPC / Ubuntu + Win11   | GUI desktop, Plex client, dual boot setup              |
+| `chromebook1`  | ChromeOS                  | Browser-based service access                           |
+| `chromebook2`  | ChromeOS                  | Browser-based service access                           |
 
-### 🟨 IoT VLAN – Smart Devices
+### 🟨 IoT VLAN — Smart & Automation Devices
 
-| Hostname       | Device / Type             | Role                                                 |
-|----------------|---------------------------|------------------------------------------------------|
-| `raspi5`       | Raspberry Pi 4 / RPi OS   | Docker manager (Dockge), MQTT monitor, Kuma mirror  |
-| `printer`      | Network Printer           | Trusted VLAN only access, direct discovery          |
-| `googletv`     | Google TV HDMI            | **Primary Plex playback endpoint**                  |
-| `smarttv`      | Google TV                 | Backup Plex client                                  |
-| `kasa-*`       | Kasa Smart Devices        | Home Assistant + Node-RED automated switching       |
+| Hostname       | Device / Type             | Role                                                   |
+|----------------|---------------------------|--------------------------------------------------------|
+| `raspi5`       | Raspberry Pi 4 / RPi OS   | Docker manager (Dockge), MQTT monitor, Kuma mirror    |
+| `printer`      | Network Printer           | Direct access from Trusted only                       |
+| `googletv`     | Google TV HDMI            | **Primary Plex client** (direct-to-NAS)               |
+| `smarttv`      | Google TV                 | **Backup client** for Plex                            |
+| `kasa-*`       | Kasa Smart Devices        | Power automation via HA and Node-RED                  |
 
-### 🟦 Services VLAN – Core Infrastructure
+### 🟦 Services VLAN — Infrastructure Backbone
 
-| Hostname       | Device / OS              | Role                                                 |
-|----------------|---------------------------|------------------------------------------------------|
-| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers              |
-| `raspi3`       | Raspberry Pi 3 / DietPi   | Pi-hole + Unbound DNS stack                         |
-| `raspi4`       | Raspberry Pi 4 / RPi OS   | Reserved node / staging                             |
-| `router`       | TP-Link AX6600            | VLAN routing + DHCP                                 |
-| `switch`       | Tenda TEG208E             | Managed VLAN trunking                               |
-
----
-
-## 🧩 Service Summary (With External Mapping via `cpoff.com`)
-
-| Service             | Internal Host  | External Access           | Role Description                      |
-|---------------------|----------------|----------------------------|----------------------------------------|
-| Plex                | `nas:32400`    | `plex.cpoff.com`          | Streaming + casting                    |
-| Home Assistant      | `nas:8123`     | `assist.cpoff.com`        | Automation engine                      |
-| Node-RED            | `dietbox:1880` | Optional / internal only  | Visual flow editor for MQTT            |
-| Mosquitto MQTT      | `dietbox:1883` | Internal only             | IoT message broker                     |
-| Grafana / Netdata   | `dietbox`      | Internal only             | Monitoring dashboards                  |
-| NGINX Proxy Manager | `dietbox`      | Port `81` (internal only) | SSL routing + service aliasing         |
-| Homarr Dashboard    | `dietbox:7575` | `dashboard.cpoff.com`     | Central service overview               |
-| Docker UI (Dockge)  | `raspi5:5001`  | `dockge.cpoff.com`        | Compose and container manager          |
-| Uptime Kuma         | `dietbox`      | `kuma.cpoff.com`          | Node status + alerts                   |
-| DNS Admin           | `raspi3:80`    | `http://dns.home/admin`   | Internal DNS control                   |
+| Hostname       | Device / OS              | Role                                                   |
+|----------------|---------------------------|--------------------------------------------------------|
+| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers                |
+| `raspi3`       | Raspberry Pi 3 / DietPi   | Pi-hole + Unbound DNS resolver                        |
+| `raspi4`       | Raspberry Pi 4 / RPi OS   | Reserved node / experiments                           |
+| `router`       | TP-Link AX6600            | DHCP, VLAN routing, DNS relay                         |
+| `switch`       | Tenda TEG208E             | Managed VLAN trunking                                 |
 
 ---
 
-## 🧠 Node-RED Integration Highlights
+## 🧩 Service Summary (Internal Access Only)
 
-- Subscribes to **Mosquitto topics** like `/kasa/power/desk`  
-- Publishes control logic: timed switches, multi-device triggers  
-- Connects directly to Home Assistant for feedback or sensor data  
-- Enables dashboard UIs for live monitoring, toggles, or scene control
-
-Optional flows:  
-- “If power draw on `kasa-avrack` exceeds threshold → trigger cooling fan”  
-- “If motion after 10PM → turn on porch lights + notify HA”  
-
----
-
-## 📌 HTTPS Enforcement Summary
-
-| Mechanism              | Location            | Description                                  |
-|------------------------|---------------------|----------------------------------------------|
-| Let’s Encrypt Certs    | `dietbox:NPM`       | Automated per subdomain via Proxy Manager    |
-| HTTP → HTTPS Redirects | NGINX Proxy Manager | Force HTTPS on all public routes             |
-| Cloudflare SSL Setting | Cloudflare DNS      | Set to **Full (Strict)**                     |
-| Cert Renewal           | Automatic           | 90-day rotation via NPM + Let’s Encrypt      |
+| Service             | Host Device     | Access Domain         | Notes                                      |
+|---------------------|-----------------|------------------------|--------------------------------------------|
+| Plex Server         | `nas`           | `https://plex.home`    | Local streaming via Google TV              |
+| Home Assistant      | `nas`           | `https://assist.home`  | Automation engine                          |
+| Mosquitto MQTT      | `dietbox`       | `mqtt.home:1883`       | Broker for Kasa / Node-RED topics          |
+| Node-RED            | `dietbox`       | `http://node-red.home` | Visual automation flow editor              |
+| Grafana / Netdata   | `dietbox`       | Custom ports           | Monitoring dashboards                      |
+| Homarr Dashboard    | `dietbox`       | `https://dashboard.home`| Service overview tile system              |
+| NGINX Proxy Manager | `dietbox`       | Internal port `81`     | Reverse proxy + SSL management             |
+| Docker UI (Dockge)  | `raspi5`        | `https://dockge.home`  | Container composition + monitoring         |
+| Uptime Kuma         | `dietbox`       | `https://kuma.home`    | Node monitoring and uptime logs            |
+| Pi-hole Admin       | `raspi3`        | `http://dns.home/admin`| DNS dashboard and filtering                |
 
 ---
 
-Prod 3 is now securely bridged between internal VLAN logic and public access via `cpoff.com`, with SSL and tunnels running clean and smooth. You've got visual automation, private DNS, performance dashboards, and airtight access all humming together.
+## 🧠 Internal DNS `.home` Records
 
-Ready to script a Zero Trust access rule, publish a Node-RED dashboard to Cloudflare, or create a splash screen for `missioncontrol.cpoff.com`?
+| Hostname / Domain     | IP Address       | Notes                                  |
+|-----------------------|------------------|----------------------------------------|
+| `plex.home`           | `10.10.99.10`    | Plex server                            |
+| `assist.home`         | `10.10.99.10`    | Home Assistant                         |
+| `dockge.home`         | `10.10.20.14`    | Docker manager                         |
+| `dashboard.home`      | `10.10.10.10`    | Homarr UI                              |
+| `kuma.home`           | `10.10.10.10`    | Uptime Kuma                            |
+| `mqtt.home`           | `10.10.10.10`    | Mosquitto broker                       |
+| `node-red.home`       | `10.10.10.10`    | Node-RED flow editor                   |
+| `dns.home`            | `10.10.99.3`     | Pi-hole dashboard                      |
+
+> DNS entries should be registered via Pi-hole → Local DNS → Custom Records or through your `dnsmasq` override.
+
+---
+
+Prod 3 is now dialed in: headless logic lives on `dietbox`, clients route internally with lightning speed, and `.home` DNS makes it all legible. If you'd like to generate visual diagrams, YAML snapshots, or monitor DNS performance stats over time, I’m here for it.
