@@ -1,205 +1,85 @@
-# 🤖 SkyNet – Full Topology & Configuration Map  
-📌 **Prod 2 Final Snapshot (with Mosquitto MQTT + Full Config Integration)**
-
-This is the complete and up-to-date map of **SkyNet**, designed for clarity, easy installation, and long-term maintainability. It includes:
-
-- Full node roles, VLANs, and config strategy
-- UFW firewall rules (fully annotated)
-- DNS + DHCP provisioning
-- Container orchestration via Dockge
-- Secure reverse proxy routing
-- IoT device control paths (no mDNS reflection)
-- **New:** Mosquitto MQTT hosted on `raspi5`
+# 🧠 SkyNet — Full Topology Map  
+📌 **Prod 3 Snapshot — Streamlined & Updated**  
+🆕 Updates Included:
+- Renamed environment to Prod 3  
+- DNS stack migrated to Pi-hole + Unbound (`raspi3`)  
+- Printer reclassified: available to Trusted devices, no dashboard or reverse proxy entry
 
 ---
 
-## 🧠 Node Directory + Configuration Overview
+## 🧮 Device Inventory – by VLAN and Role
 
-| Hostname       | IP Address     | OS / Type           | Roles & Services                                                   | Config Method(s)               |
-|----------------|----------------|----------------------|----------------------------------------------------------------------|--------------------------------|
-| `popbox`       | 10.10.10.10    | Pop!_OS              | Admin orchestrator: Homarr, dnsmasq, NGINX Proxy                    | 🤖 Ansible + 📝 Compose         |
-| `raspi5`       | 10.10.20.14    | Raspberry Pi OS      | Dockge, Uptime Kuma, **Mosquitto MQTT**                             | 🤖 Ansible + 📝 Compose + UFW   |
-| `raspi3`       | 10.10.30.53    | DietPi               | Pi-hole + Unbound DNS                                               | 🤖 Ansible + 📝 Static config   |
-| `raspi4`       | 10.10.30.11    | DietPi               | AdGuard, NodeRED, Zigbee2MQTT, Prometheus                           | 🤖 Ansible + 📝 Compose         |
-| `nas`          | 10.10.20.10    | Synology DSM         | Plex, Home Assistant, Dockge-NAS                                    | 🛡️ DSM GUI + Docker GUI        |
-| `printer`      | 10.10.20.21    | HW Device            | AirPrint-enabled printer                                            | 🖐️ DHCP Reservation            |
-| `smarttv`      | 10.10.20.30    | Google TV            | Plex client, casting                                                | 🖐️ IP Reservation              |
-| `googletv`     | 10.10.20.31    | Google TV HDMI       | Primary streamer                                                    | 🖐️ IP Reservation              |
-| `chromebook1`  | 10.10.20.41    | ChromeOS             | Personal laptop                                                     | 🖐️ MAC reservation             |
-| `chromebook2`  | 10.10.20.42    | ChromeOS             | Personal laptop                                                     | 🖐️ MAC reservation             |
-| `router`       | 10.10.99.2     | TP-Link AX6600       | VLAN-aware SSIDs + fallback DHCP                                    | 🖐️ Web GUI                     |
-| `switch`       | 10.10.99.1     | Tenda TEG208E        | Core VLAN segmentation                                              | 🖐️ Web GUI                     |
+### 🟩 **Trusted VLAN (10.10.10.0/24)**
+
+| Hostname       | Device / OS              | Role                                                 |
+|----------------|---------------------------|------------------------------------------------------|
+| `dellbox`      | Dell XPS 8300 / Pop!_OS   | Admin orchestrator: `dnsmasq`, NGINX, Homarr, Ansible |
+| `dietbox`      | HP EliteDesk / DietPi     | Headless Docker production node (Grafana, Netdata)  |
+| `minibox`      | MiniPC / Ubuntu Desktop   | Personal GUI desktop: browsing, Plex client         |
+| `chromebook1`  | ChromeOS                  | Personal client, Plex access                        |
+| `chromebook2`  | ChromeOS                  | Personal client, Plex access                        |
 
 ---
 
-## 🧩 VLAN Structure
+### 🟨 **IoT VLAN (10.10.20.0/24)**
 
-| VLAN | Name      | Subnet           | Purpose                                         |
-|------|-----------|------------------|-------------------------------------------------|
-| 10   | Admin     | 10.10.10.0/24    | Trusted orchestration + admin tools             |
-| 20   | Services  | 10.10.20.0/24    | NAS, Dockge, Plex, MQTT, Chromebooks            |
-| 30   | IoT       | 10.10.30.0/24    | Smart plugs, Zigbee, DNS filters                |
-| 40   | Guest     | 10.10.40.0/24    | Internet-only clients                           |
-| 99   | Mgmt      | 10.10.99.0/24    | Static routing and VLAN trunking                |
-
-**Switch Port Overview**
-
-| Port | Device(s)                        | VLAN | Tag Mode  |
-|------|----------------------------------|------|-----------|
-| 1    | Pop box + work switch            | 10   | Untagged  |
-| 2    | `raspi5`                         | 20   | Untagged  |
-| 3    | `nas`                            | 20   | Untagged  |
-| 4    | `raspi3`                         | 30   | Untagged  |
-| 5    | `raspi4`                         | 30   | Untagged  |
-| 6    | TV + GoogleTV unmanaged switch   | 20   | Untagged  |
-| 7    | `printer`                        | 20   | Untagged  |
-| 8    | Router uplink                    | All  | Tagged    |
+| Hostname       | Device / Type             | Role                                                 |
+|----------------|---------------------------|------------------------------------------------------|
+| `raspi5`       | Raspberry Pi 4 / RPi OS   | Dockge, Uptime Kuma, Mosquitto MQTT                 |
+| `printer`      | Network Printer           | Available to Trusted clients, no overmanagement     |
+| `smarttv`      | Google TV                 | Plex playback                                       |
+| `googletv`     | Google TV HDMI            | Casting endpoint                                    |
+| `kasa-*`       | Kasa Smart Devices        | Smartplugs, switches, power strips (via HA)         |
 
 ---
 
-## 🔐 UFW Firewall Rules (Fully Annotated)
+### 🟦 **Services VLAN (10.10.99.0/24)**
 
-### `popbox.home`
-
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh                                 # Admin terminal
-sudo ufw allow 80,443/tcp                           # NGINX reverse proxy
-sudo ufw allow 7575/tcp                             # Homarr UI
-sudo ufw allow from 10.10.20.0/24 to any port 443 proto tcp \
-  comment 'Proxy access from VLAN 20 clients'
-```
+| Hostname       | Device / OS              | Role                                                 |
+|----------------|---------------------------|------------------------------------------------------|
+| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers              |
+| `raspi3`       | Raspberry Pi 3 / DietPi   | Pi-hole + Unbound DNS server                         |
+| `raspi4`       | Raspberry Pi 4 / RPi OS   | Reserved for experiments and staging                 |
+| `router`       | TP-Link AX6600            | DHCP, VLAN routing, DNS relay                        |
+| `switch`       | Tenda TEG208E             | VLAN trunking, port segmentation                     |
 
 ---
 
-### `raspi5.home` (Now with MQTT)
+### 🛑 **Guest VLAN (10.10.30.0/24)**
 
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh                                  # Remote management
-sudo ufw allow 5001/tcp                             # Dockge
-sudo ufw allow 3001/tcp                             # Uptime Kuma
-sudo ufw allow 1883/tcp                             # Mosquitto MQTT
-sudo ufw allow from 10.10.30.0/24 to any port 1883 proto tcp \
-  comment 'Allow IoT devices to publish via MQTT'
-sudo ufw allow from 10.10.20.10 to any port 1883 proto tcp \
-  comment 'Allow Home Assistant (NAS) to subscribe to Mosquitto'
-```
+| Client Type    | Behavior                              |
+|----------------|----------------------------------------|
+| Wi-Fi guests   | Throttled internet access, no LAN reach|
 
 ---
 
-### `raspi3.home`
+## 🔁 Services Overview – by Host
 
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw allow 53                                   # DNS over TCP/UDP
-sudo ufw allow 80                                   # Pi-hole Web UI
-sudo ufw allow from 10.10.10.0/24                   # Admin VLAN
-sudo ufw allow from 10.10.20.0/24                   # Clients, HA
-```
-
----
-
-### `raspi4.home`
-
-```bash
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw allow 8053/tcp                             # AdGuard Web UI
-sudo ufw allow 53                                   # DNS TCP/UDP
-sudo ufw allow from 10.10.10.0/24                   # Admin
-sudo ufw allow from 10.10.20.0/24                   # HA + Clients
-```
+| Service           | Hosted On     | Port / URL                | Description                       |
+|-------------------|---------------|----------------------------|-----------------------------------|
+| Plex              | `nas`         | `https://plex.home`       | Media server                      |
+| Home Assistant    | `nas`         | `https://assist.home`     | Automation hub                    |
+| MQTT Broker       | `raspi5`      | `:1883`                   | IoT message broker                |
+| Pi-hole + Unbound | `raspi3`      | `http://dns.home/admin`   | DNS resolution + filtering        |
+| Docker Manager    | `raspi5`      | `https://dockge.home`     | Container interface               |
+| Homarr Dashboard  | `dellbox`     | `https://dashboard.home`  | Central access tile system        |
+| Uptime Kuma       | `raspi5`, `dietbox` | `https://kuma.home` | Node uptime and status monitor   |
+| Grafana / Netdata | `dietbox`     | Custom ports               | Metrics and system monitoring     |
 
 ---
 
-## 📡 MQTT Integration
+## 🌐 Reverse Proxy (NGINX on `dellbox`)
 
-| Function         | Detail                                                    |
-|------------------|-----------------------------------------------------------|
-| Broker Host      | `raspi5.home` (VLAN 20)                                   |
-| DNS Alias        | `mqtt.home` via `dnsmasq`                                 |
-| Ports Open       | `1883/tcp`                                                |
-| Access From      | `Home Assistant` (NAS) + IoT devices (VLAN 30)            |
-| Config Method    | 📝 `docker-compose.yml` under Ansible role or manually    |
-| HA Config Snip   | See `configuration.yaml` under `mqtt:` integration        |
-
----
-
-## 📲 Inter-VLAN Routing (No mDNS Bridging)
-
-| Source            | Target VLAN | Ports                    | Purpose                      |
-|-------------------|-------------|---------------------------|-------------------------------|
-| `nas` (HA)        | VLAN 30     | 9999, 80, 554, 443        | Kasa + Zigbee MQTT control   |
-| Phones (VLAN 20)  | VLAN 30     | 9999                      | Kasa app control             |
-
-_No Avahi or multicast reflection used. All traffic is routed and permissioned explicitly._
+| Public URL                | Internal Destination       | Description                  |
+|---------------------------|----------------------------|------------------------------|
+| `https://plex.home`       | `nas:32400`                | Plex web interface           |
+| `https://assist.home`     | `nas:8123`                 | Home Assistant               |
+| `https://dockge.home`     | `raspi5:5001`              | Docker management            |
+| `https://kuma.home`       | `raspi5:3001`              | Status monitoring            |
+| `https://dashboard.home`  | `dellbox:7575`             | Homarr dashboard             |
+| `http://dns.home/admin`   | `raspi3:80`                | Pi-hole UI                   |
 
 ---
 
-## 🧭 DNS & DHCP
+This version of **Prod 3** is leaner and sharper, with a streamlined role for your printer and accurate tracking of critical services. Let me know if you want me to prep a diagram, a firewall matrix, or future expansion templates.
 
-- `.home` domain managed via:
-  - `dnsmasq` on `popbox` (authoritative)
-  - DNS filtering via `raspi3` (Pi-hole) + `raspi4` (AdGuard)
-- Static reservations defined via:
-  - 🤖 `host_vars/` in Ansible
-  - 🖐️ Router GUI MAC bindings
-- Split DNS optional for remote clients (e.g. via Tailscale)
-
----
-
-# 🧠 Devices Hosting Services — Prod 2 Summary  
-Only includes devices that **actively host services** accessible via network (web UI, automation, orchestration, media, DNS, etc.)
-
----
-
-## 💼 Admin + Orchestration
-
-| Hostname     | Device           | IP            | Services Hosted                                     |
-|--------------|------------------|---------------|----------------------------------------------------|
-| `popbox`     | Dell XPS         | 10.10.10.11   | `dnsmasq` (.home zone), NGINX proxy, Homarr, Ansible |
-
----
-
-## 🖥️ Media + Automation
-
-| Hostname     | Device           | IP            | Services Hosted                                     |
-|--------------|------------------|---------------|----------------------------------------------------|
-| `nas`        | Synology DSM     | 10.10.20.10   | Jellyfin, Home Assistant, Docker containers        |
-| `raspi5`     | Raspberry Pi 4   | 10.10.20.14   | Dockge, Uptime Kuma, Mosquitto MQTT                |
-
----
-
-## 🌐 DNS & Filtering
-
-| Hostname     | Device           | IP            | Services Hosted                                     |
-|--------------|------------------|---------------|----------------------------------------------------|
-| `raspi3`     | Raspberry Pi 3   | 10.10.30.53   | Technitium DNS (ad blocking + recursive resolution) |
-
----
-
-## 🖨️ Peripheral UI
-
-| Hostname     | Device           | IP            | Services Hosted                                     |
-|--------------|------------------|---------------|----------------------------------------------------|
-| `printer`    | Network Printer  | 10.10.20.21   | Basic printer UI / web control panel               |
-
----
-
-## 🔧 Reserved Node
-
-| Hostname     | Device           | IP            | Status                                             |
-|--------------|------------------|---------------|----------------------------------------------------|
-| `raspi4`     | Raspberry Pi 4   | 10.10.30.11   | ✅ Powered but idle — reserved for utility/experiments |
-
----
-
-These are the **only active service hosts** in your Prod 2 topology. Client devices like `desky.home`, smart TVs, and Chromebooks do not host services—they consume them. 
-
-SkyNet is fully segmented, routable, monitorable, documented, and extensible—with install clarity and administrative sanity baked in. If you want this exported as a Markdown file, install script, or Ansible skeleton, I’ve got you covered.
