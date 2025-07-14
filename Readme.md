@@ -1,85 +1,90 @@
 # 🧠 SkyNet — Full Topology Map  
-📌 **Prod 3 Snapshot — Streamlined & Updated**  
-🆕 Updates Included:
-- Renamed environment to Prod 3  
-- DNS stack migrated to Pi-hole + Unbound (`raspi3`)  
-- Printer reclassified: available to Trusted devices, no dashboard or reverse proxy entry
+📌 **Prod 3 Final Snapshot — With `dellbox` Retired**  
+🎯 Migration Complete:
+- NGINX Proxy Manager moved to `dietbox`
+- Homarr, Ansible, and any orchestration tools migrated or sunset
+- DNS aliases and reverse proxy entries updated
+- `dellbox` gracefully decommissioned
 
 ---
 
-## 🧮 Device Inventory – by VLAN and Role
+## 🔐 VLAN Assignment Summary
 
-### 🟩 **Trusted VLAN (10.10.10.0/24)**
-
-| Hostname       | Device / OS              | Role                                                 |
-|----------------|---------------------------|------------------------------------------------------|
-| `dellbox`      | Dell XPS 8300 / Pop!_OS   | Admin orchestrator: `dnsmasq`, NGINX, Homarr, Ansible |
-| `dietbox`      | HP EliteDesk / DietPi     | Headless Docker production node (Grafana, Netdata)  |
-| `minibox`      | MiniPC / Ubuntu Desktop   | Personal GUI desktop: browsing, Plex client         |
-| `chromebook1`  | ChromeOS                  | Personal client, Plex access                        |
-| `chromebook2`  | ChromeOS                  | Personal client, Plex access                        |
+| VLAN | Label       | Subnet           | Purpose                                                              |
+|------|-------------|------------------|----------------------------------------------------------------------|
+| 10   | Trusted     | 10.10.10.0/24    | Primary desktops, orchestrators, Chromebooks                        |
+| 20   | IoT         | 10.10.20.0/24    | TVs, MQTT devices, printer, Kasa smart hardware                      |
+| 30   | Guest       | 10.10.30.0/24    | Internet-only Wi-Fi                                                  |
+| 99   | Services    | 10.10.99.0/24    | NAS, DNS, router, switch, utility Pi                                 |
 
 ---
 
-### 🟨 **IoT VLAN (10.10.20.0/24)**
+## 🧮 Node Inventory — Post-Dellbox Retirement
 
-| Hostname       | Device / Type             | Role                                                 |
-|----------------|---------------------------|------------------------------------------------------|
-| `raspi5`       | Raspberry Pi 4 / RPi OS   | Dockge, Uptime Kuma, Mosquitto MQTT                 |
-| `printer`      | Network Printer           | Available to Trusted clients, no overmanagement     |
-| `smarttv`      | Google TV                 | Plex playback                                       |
-| `googletv`     | Google TV HDMI            | Casting endpoint                                    |
-| `kasa-*`       | Kasa Smart Devices        | Smartplugs, switches, power strips (via HA)         |
+### 🟩 Trusted (VLAN 10)
 
----
+| Hostname       | Device / OS              | Role                                                |
+|----------------|---------------------------|-----------------------------------------------------|
+| `dietbox`      | HP EliteDesk / DietPi     | Reverse proxy (NPM), Docker host, Grafana, Netdata |
+| `minibox`      | MiniPC / Ubuntu Desktop   | Personal desktop, Home Assistant client access     |
+| `chromebook1`  | ChromeOS                  | Browser client, Plex access                        |
+| `chromebook2`  | ChromeOS                  | Browser client, Plex access                        |
 
-### 🟦 **Services VLAN (10.10.99.0/24)**
+### 🟨 IoT (VLAN 20)
 
-| Hostname       | Device / OS              | Role                                                 |
-|----------------|---------------------------|------------------------------------------------------|
-| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers              |
-| `raspi3`       | Raspberry Pi 3 / DietPi   | Pi-hole + Unbound DNS server                         |
-| `raspi4`       | Raspberry Pi 4 / RPi OS   | Reserved for experiments and staging                 |
-| `router`       | TP-Link AX6600            | DHCP, VLAN routing, DNS relay                        |
-| `switch`       | Tenda TEG208E             | VLAN trunking, port segmentation                     |
+| Hostname       | Device / Type             | Role                                               |
+|----------------|---------------------------|----------------------------------------------------|
+| `raspi5`       | Raspberry Pi 4 / RPi OS   | Dockge, Mosquitto MQTT, Uptime Kuma               |
+| `printer`      | Network Printer           | Available to Trusted clients                      |
+| `smarttv`      | Google TV                 | Plex playback                                     |
+| `googletv`     | Google TV HDMI            | Casting endpoint                                  |
+| `kasa-*`       | Kasa Smart Devices        | Smartplugs, switches, power strips (HA-integrated)|
 
----
+### 🟦 Services (VLAN 99)
 
-### 🛑 **Guest VLAN (10.10.30.0/24)**
+| Hostname       | Device / OS              | Role                                                  |
+|----------------|---------------------------|-------------------------------------------------------|
+| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers               |
+| `raspi3`       | Raspberry Pi 3 / DietPi   | Pi-hole + Unbound DNS stack                          |
+| `raspi4`       | Raspberry Pi 4 / RPi OS   | Reserved for experiments                             |
+| `router`       | TP-Link AX6600            | DHCP, VLAN-aware routing, DNS relay                   |
+| `switch`       | Tenda TEG208E             | VLAN trunking, port segmentation                      |
 
-| Client Type    | Behavior                              |
-|----------------|----------------------------------------|
-| Wi-Fi guests   | Throttled internet access, no LAN reach|
+### 🛑 Retired Node
 
----
-
-## 🔁 Services Overview – by Host
-
-| Service           | Hosted On     | Port / URL                | Description                       |
-|-------------------|---------------|----------------------------|-----------------------------------|
-| Plex              | `nas`         | `https://plex.home`       | Media server                      |
-| Home Assistant    | `nas`         | `https://assist.home`     | Automation hub                    |
-| MQTT Broker       | `raspi5`      | `:1883`                   | IoT message broker                |
-| Pi-hole + Unbound | `raspi3`      | `http://dns.home/admin`   | DNS resolution + filtering        |
-| Docker Manager    | `raspi5`      | `https://dockge.home`     | Container interface               |
-| Homarr Dashboard  | `dellbox`     | `https://dashboard.home`  | Central access tile system        |
-| Uptime Kuma       | `raspi5`, `dietbox` | `https://kuma.home` | Node uptime and status monitor   |
-| Grafana / Netdata | `dietbox`     | Custom ports               | Metrics and system monitoring     |
+| Hostname   | Device / OS              | Status       |
+|------------|---------------------------|--------------|
+| `dellbox`  | Dell XPS 8300 / Pop!_OS   | ❌ Decommissioned, services migrated |
 
 ---
 
-## 🌐 Reverse Proxy (NGINX on `dellbox`)
+## 🌐 Service Summary
 
-| Public URL                | Internal Destination       | Description                  |
-|---------------------------|----------------------------|------------------------------|
-| `https://plex.home`       | `nas:32400`                | Plex web interface           |
-| `https://assist.home`     | `nas:8123`                 | Home Assistant               |
-| `https://dockge.home`     | `raspi5:5001`              | Docker management            |
-| `https://kuma.home`       | `raspi5:3001`              | Status monitoring            |
-| `https://dashboard.home`  | `dellbox:7575`             | Homarr dashboard             |
-| `http://dns.home/admin`   | `raspi3:80`                | Pi-hole UI                   |
+| Service           | Host           | Access URL / Port             | Description                          |
+|-------------------|----------------|-------------------------------|--------------------------------------|
+| NGINX Proxy Mgr   | `dietbox`      | Ports 80/81/443               | Reverse proxy + SSL termination      |
+| Plex Server       | `nas`          | `https://plex.home`           | Media streaming                      |
+| Home Assistant    | `nas`          | `https://assist.home`         | Automation controller                |
+| Pi-hole UI        | `raspi3`       | `http://dns.home/admin`       | DNS filtering + Unbound resolver     |
+| MQTT Broker       | `raspi5`       | Port `1883`                   | IoT communications                   |
+| Docker Manager    | `raspi5`       | `https://dockge.home`         | Compose + container management       |
+| Homarr Dashboard  | `dietbox`      | `https://dashboard.home`      | Service tile overview                |
+| Uptime Kuma       | `raspi5`, `dietbox` | `https://kuma.home`       | Node availability monitoring         |
+| Grafana / Netdata | `dietbox`      | (custom ports)                | Performance dashboards               |
 
 ---
 
-This version of **Prod 3** is leaner and sharper, with a streamlined role for your printer and accurate tracking of critical services. Let me know if you want me to prep a diagram, a firewall matrix, or future expansion templates.
+## 🧭 Updated Reverse Proxy Routes (via `dietbox`)
 
+| Public URL               | Internal Host         | Description                      |
+|--------------------------|------------------------|----------------------------------|
+| `https://plex.home`      | `nas:32400`            | Plex Web UI                      |
+| `https://assist.home`    | `nas:8123`             | Home Assistant                   |
+| `https://dockge.home`    | `raspi5:5001`          | Docker container UI              |
+| `https://kuma.home`      | `raspi5:3001`          | Node uptime monitor              |
+| `https://dashboard.home` | `dietbox:7575`         | Homarr dashboard                 |
+| `http://dns.home/admin`  | `raspi3:80`            | Pi-hole admin interface          |
+
+---
+
+Prod 3 is now streamlined, powerful, and completely centralized. The dietbox stack carries the full orchestration load with no wasted resources. If you'd like help benchmarking its performance, prepping a backup plan, or designing a tagline-worthy splash page for dashboard launch, I’m ready to assist.
