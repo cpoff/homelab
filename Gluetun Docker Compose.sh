@@ -1,3 +1,7 @@
+GRANT PERMISSIONS AFTER RUNNING:
+chmod +x dellbox-init.sh
+--------------------------------
+
 #!/bin/bash
 # dellbox-init.sh — Setup script for VPN-secured media grooming stack
 # Target: DietPi x86 box running headless
