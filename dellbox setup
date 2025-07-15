@@ -138,4 +138,4 @@ docker compose up -d
 
 ---
 
-Let me know when you’re ready to mount `/mnt/nas_media` and I’ll fold in NAS volume bindings + fstab support
+Let me know when you’re ready to mount `/mnt/nas_media` and I’ll fold in NAS volume bindings + fstab support. We can also extend this with FileBot automation or Prowlarr indexers once you’re back home. This stack’s got room to grow. 🧱🧠🔒
