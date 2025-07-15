@@ -1,5 +1,8 @@
-GRANT PERMISSIONS AFTER RUNNING:
+GRANT PERMISSIONS:
 chmod +x dellbox-init.sh
+
+RUN:
+./dellbox-init.sh
 --------------------------------
 
 #!/bin/bash
