@@ -1,88 +1,103 @@
 # 🧠 SkyNet — Full Topology Map  
-📌 **Prod 3 Snapshot — VLAN Update + Recommissioned `dellbox`**  
-🎯 Key Updates:
-- ✅ VLAN 40 created for `dellbox` with Gluetun-based secure downloads  
-- ✅ `raspi5` confirmed as **Raspberry Pi 5**  
-- ✅ `raspi4` now DNS resolver (Pi-hole + Unbound), directly wired to router  
-- ✅ `raspi3` repurposed for experimentation  
-- ✅ Desk switch setup clarified: unmanaged TP-Link feeds both `dietbox` and `dellbox`  
+📌 **Prod 3 Snapshot — Desk VLAN Fix + `dellbox` Relocated to Rack**  
+🎯 Key Adjustments:
+- ❌ Removed TP-Link #1 as mixed-VLAN desk switch  
+- ✅ Relocated `dellbox` to center rack → clean VLAN 40 via direct Tenda access port  
+- ✅ All unmanaged switches now carry **single VLAN domains**  
+- ✅ Desk zone is VLAN 10 only (`dietbox`, `minibox`)  
+- ✅ Behind-TV switch feeds VLAN 20 devices  
+- ✅ Center rack hosts VLAN 99 + VLAN 40 endpoints
 
 ---
 
 ## 🔐 VLAN Assignment Summary
 
-| VLAN | Label       | Subnet           | Connected Devices                           | Purpose                                     |
-|------|-------------|------------------|----------------------------------------------|---------------------------------------------|
-| 10   | Trusted     | 10.10.10.0/24    | `dietbox`, `minibox`, `chromebook1/2`        | GUI desktops, orchestration nodes           |
-| 20   | IoT         | 10.10.20.0/24    | `raspi5`, `printer`, `googletv`, `smarttv`, `kasa-*` | Messaging devices, Smart TVs, HA hardware   |
-| 30   | Guest       | 10.10.30.0/24    | (Wi-Fi guests)                               | Internet-only clients                       |
-| 40   | VPN Zone    | 10.10.40.0/24    | `dellbox`                                    | Secure, anonymous media downloads           |
-| 99   | Services    | 10.10.99.0/24    | `raspi4`, `nas`, `router`, `switch`, `raspi3`| Infra backbone, DNS, storage, staging       |
+| VLAN | Label       | Subnet           | Connected Devices                             | Purpose                                         |
+|------|-------------|------------------|------------------------------------------------|-------------------------------------------------|
+| 10   | Trusted     | 10.10.10.0/24    | `dietbox`, `minibox`, `chromebooks`           | GUI desktops, orchestration nodes              |
+| 20   | IoT         | 10.10.20.0/24    | `raspi5`, `googletv`, `smarttv`, `printer`, `kasa-*` | Smart home endpoints + MQTT messaging         |
+| 30   | Guest       | 10.10.30.0/24    | (Wi-Fi guests)                                 | Internet-only access                            |
+| 40   | VPN Zone    | 10.10.40.0/24    | `dellbox` (now in rack)                        | Gluetun-based secure downloads + media prep     |
+| 99   | Services    | 10.10.99.0/24    | `raspi4`, `nas`, `router`, `switch`, `raspi3` | Infra backbone: DNS, storage, test nodes        |
 
 ---
 
-## 🧮 Device Inventory by VLAN
+## 🧮 Physical Wiring & Switch Placement
 
-### 🟩 VLAN 10 — Trusted Zone
+| Location             | Switch Type         | VLAN               | Devices                                     |
+|----------------------|---------------------|---------------------|---------------------------------------------|
+| **Center Rack**      | Tenda TEG208E       | Managed (all VLANs) | `router`, `raspi4`, `raspi3`, `nas`, `dellbox`  
+|                      | TP-Link #3 (Unmanaged) | VLAN 99            | Backup or staging devices                  |
+| **Desk Zone**        | TP-Link #1 (Unmanaged) | VLAN 10            | `dietbox`, `minibox`                       |
+| **TV Zone**          | TP-Link #2 (Unmanaged) | VLAN 20            | `smarttv`, `googletv`, `printer`, `kasa-*` |
+| **Spare Shelf**      | TP-Link #4 (Unmanaged) | TBD                | Future lab nodes or temporary connections  |
+
+> All TP-Link unmanaged switches receive VLAN-specific uplinks from the Tenda switch.
+
+---
+
+## 🧩 Device Inventory
+
+### 🟩 VLAN 10 — Trusted Clients
 
 | Hostname       | Device / OS              | Role                                                |
 |----------------|---------------------------|-----------------------------------------------------|
-| `dietbox`      | HP EliteDesk / DietPi     | Node-RED, NGINX Proxy, Docker, Homarr, Kuma        |
-| `minibox`      | MiniPC / Ubuntu + Win11   | GUI desktop, Plex client, HA frontend              |
-| `chromebook1`  | ChromeOS                  | Browser-based media control                        |
-| `chromebook2`  | ChromeOS                  | Browser-based media control                        |
+| `dietbox`      | HP EliteDesk / DietPi     | Headless orchestrator: Proxy, Node-RED, Kuma, Docker  
+| `minibox`      | MiniPC / Ubuntu + Win11   | GUI desktop, Plex client, Home Assistant interface  
+| `chromebook1`  | ChromeOS                  | Web dashboard + Plex client                        |
+| `chromebook2`  | ChromeOS                  | Web dashboard + Plex client                        |
 
 ### 🟨 VLAN 20 — IoT Zone
 
 | Hostname       | Device / Hardware         | Role                                                |
 |----------------|---------------------------|-----------------------------------------------------|
-| `raspi5`       | Raspberry Pi 5 / RPi OS   | Mosquitto broker, Docker manager (Dockge), optional Kuma  
-| `printer`      | Network Printer           | Limited to Trusted clients                         |
-| `googletv`     | Google TV HDMI            | Primary Plex endpoint                              |
-| `smarttv`      | Google TV OS              | Secondary Plex endpoint                            |
-| `kasa-*`       | Smart plugs, switches     | Automated via Node-RED + Home Assistant            |
+| `raspi5`       | Raspberry Pi 5 / RPi OS   | Mosquitto broker, Dockge UI, optional Kuma          |
+| `googletv`     | Google TV HDMI            | Plex endpoint                                       |
+| `smarttv`      | Google TV OS              | Backup Plex endpoint                               |
+| `printer`      | Network Printer           | LAN-restricted service                             |
+| `kasa-*`       | Smart plugs/switches      | Automated via HA + Node-RED                        |
 
-### 🛡️ VLAN 40 — VPN-Isolated Downloads
+### 🛡️ VLAN 40 — VPN Isolation
 
 | Hostname       | Device / OS              | Role                                                |
 |----------------|---------------------------|-----------------------------------------------------|
-| `dellbox`      | Dell Desktop / Pop!_OS    | Gluetun VPN, qBittorrent, Sonarr, Radarr, FileBot, NAS mover  
+| `dellbox`      | Dell Desktop / Pop!_OS    | Gluetun VPN gateway, media downloader stack (Sonarr, Radarr, FileBot, qBittorrent)
 
-> Connected via unmanaged TP-Link desk switch, VLAN tagging applied at NIC using `nmcli`.
+> Now wired directly to Tenda access port for VLAN 40 (no unmanaged switch involved).
 
 ### 🟦 VLAN 99 — Services Backbone
 
-| Hostname       | Device / OS              | Role                                                |
+| Hostname       | Device / Hardware         | Role                                                |
 |----------------|---------------------------|-----------------------------------------------------|
-| `raspi4`       | Raspberry Pi 4 / DietPi   | Pi-hole + Unbound DNS Resolver, directly off router  
-| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers, Volume2 media share  
-| `router`       | TP-Link AX6600            | Routing, VLANs, DHCP, DNS relay                     |
-| `switch`       | Tenda TEG208E             | Managed VLAN trunking                               |
-| `raspi3`       | Raspberry Pi 3 / DietPi   | Experimental node — staging, trials, test scripts   |
+| `raspi4`       | Raspberry Pi 4 / DietPi   | Pi-hole + Unbound DNS Resolver                     |
+| `nas`          | Synology DSM              | Plex, Home Assistant, Docker containers             |
+| `router`       | TP-Link AX6600            | DHCP, VLAN routing, DNS relay                      |
+| `switch`       | Tenda TEG208E             | Managed backbone switch                            |
+| `raspi3`       | Raspberry Pi 3 / DietPi   | Experimental node                                  |
 
 ---
 
-## 🧩 Core Services Summary
+## 📦 Services Summary
 
-| Service             | Host Device     | Access Domain         | Role                                            |
-|---------------------|-----------------|------------------------|-------------------------------------------------|
-| Plex Server         | `nas`           | `https://plex.home`    | Internal media streaming                        |
-| Home Assistant      | `nas`           | `https://assist.home`  | Smart automation                                |
-| Mosquitto MQTT      | `raspi5`        | `mqtt.home:1883`       | IoT messaging                                   |
-| Node-RED            | `dietbox`       | `http://node-red.home` | Flow editor + automations                       |
-| Homarr Dashboard    | `dietbox`       | `https://dashboard.home`| Tile-style UI for service overview             |
-| NGINX Proxy Manager | `dietbox`       | Internal port `81`     | SSL handling, reverse proxy                     |
-| Docker UI (Dockge)  | `raspi5`        | `https://dockge.home`  | Visual container management                     |
-| Uptime Kuma         | `dietbox`       | `https://kuma.home`    | Node status and alerts                          |
-| Pi-hole Admin       | `raspi4`        | `http://dns.home/admin`| DNS filtering + logging                         |
-| Media Groomers      | `dellbox`       | Local containers        | Sonarr, Radarr, FileBot, all routed via Gluetun  
-| NAS Volume2         | `nas`           | `/volume2/media`       | Dedicated media storage                         |
+| Service             | Host Device     | Access Domain         | Purpose                                    |
+|---------------------|-----------------|------------------------|--------------------------------------------|
+| Plex Server         | `nas`           | `https://plex.home`    | Internal streaming                         |
+| Home Assistant      | `nas`           | `https://assist.home`  | Smart automation engine                    |
+| Mosquitto MQTT      | `raspi5`        | `mqtt.home:1883`       | IoT messaging broker                       |
+| Node-RED            | `dietbox`       | `http://node-red.home` | Visual flow logic                          |
+| Homarr Dashboard    | `dietbox`       | `https://dashboard.home`| Service overview                           |
+| NGINX Proxy Manager | `dietbox`       | Internal port `81`     | Reverse proxy + HTTPS routing              |
+| Docker UI (Dockge)  | `raspi5`        | `https://dockge.home`  | Compose-based container control            |
+| Uptime Kuma         | `dietbox`       | `https://kuma.home`    | Node health + alerts                       |
+| Pi-hole Admin       | `raspi4`        | `http://dns.home/admin`| DNS filtering dashboard                    |
+| Media Groomers      | `dellbox`       | (Local containers)     | Radarr, Sonarr, FileBot, routed via Gluetun  
+| NAS Volume2         | `nas`           | `/volume2/media`       | Dedicated media storage                     |
 
 ---
 
 ## 🧠 Internal DNS `.home` Records
 
-| Domain Name         | IP Address       | Linked Host Device            |
+| Domain Name         | IP Address       | Host Device                  |
 |---------------------|------------------|-------------------------------|
 | `plex.home`         | `10.10.99.10`    | `nas`                         |
 | `assist.home`       | `10.10.99.10`    | `nas`                         |
@@ -95,6 +110,4 @@
 
 ---
 
-Your VLANs are now segmented by intent: orchestration, IoT messaging, secure downloads, and infrastructure. Each node is doing what it does best, and the desk switch layout is efficient with per-device tagging.
-
-Want to annotate this map with links to Docker Compose files, storage mounts, or VLAN flow diagrams? This topology deserves a trophy case.
+Your physical layout now matches your logical VLAN model—no cross-domain conflicts, clean handoffs, and streamlined performance from switch to service. We can diagram this visually or start annotating physical ports if you’re ready to label cables. This build hums.
