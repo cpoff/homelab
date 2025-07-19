@@ -14,17 +14,32 @@
 ---
 
 
-## 🧮 Physical Wiring by Switch
+## 🧮 Physical Wiring — Tenda Switch w/ 8-Port Constraints
 
-| Location           | Switch            | VLAN         | Connected Devices                                     |
-|--------------------|-------------------|--------------|------------------------------------------------------|
-| **Center Rack**    | Tenda TEG208E     | Managed      | `router`, `nas`, `raspi4`, `raspi3`, `dellbox`       |
-|                    | TP-Link #3        | VLAN 99      | Optional lab/test devices                            |
-| **Desk Zone**      | TP-Link #1        | VLAN 10      | `dietbox`, `minibox`, `workbox`                      |
-| **TV Zone**        | TP-Link #2        | VLAN 20      | `googletv`, `smarttv`, `printer`, `kasa-*`           |
-| **Spare Shelf**    | TP-Link #4        | TBD          | Future nodes — VLANs as needed                       |
+### 🌐 Tenda TEG208E — Core (8 Ports Total)
+
+| Port | Connected Device / Uplink      | VLAN     | Role                                 |
+|------|--------------------------------|----------|--------------------------------------|
+| 1    | `router`                       | 99       | Gateway, DHCP, VLAN control          |
+| 2    | `nas`                          | 99       | Synology Plex / media storage        |
+| 3    | `raspi4`                       | 99       | Pi-hole + Unbound DNS                |
+| 4    | `raspi3`                       | 99       | Experimental node                    |
+| 5    | `dellbox`                      | 40       | VPN downloads + FileBot pipeline     |
+| 6    | TP-Link #1 — Desk Zone         | 10       | `dietbox`, `minibox`, `workbox`      |
+| 7    | TP-Link #2 — TV / IoT Zone     | 20       | `googletv`, `smarttv`, printer, Kasa |
+| 8    | TP-Link #3 — Lab/Staging       | 99       | Future experimental/test devices     |
 
 ---
+
+### ⚡ TP-Link Access Layer Distribution
+
+- **TP-Link #1 (VLAN 10)**: `dietbox`, `minibox`, `workbox`, `chromebooks`
+- **TP-Link #2 (VLAN 20)**: `googletv`, `smarttv`, printer, Kasa gear
+- **TP-Link #3 (VLAN 99)**: overflow test devices, staging containers
+
+> Note: TP-Link #4 is currently unlinked from the Tenda and reserved for future expansion. Could uplink to another TP-Link via VLAN trunking if you daisy-chain.
+---
+
 
 ## 🧩 Device Inventory (By VLAN)
 
