@@ -31,15 +31,6 @@
 
 ---
 
-### ⚡ TP-Link Access Layer Distribution
-
-- **TP-Link #1 (VLAN 10)**: `dietbox`, `minibox`, `workbox`, `chromebooks`
-- **TP-Link #2 (VLAN 20)**: `googletv`, `smarttv`, printer, Kasa gear
-- **TP-Link #3 (VLAN 99)**: overflow test devices, staging containers
-
-> Note: TP-Link #4 is currently unlinked from the Tenda and reserved for future expansion. Could uplink to another TP-Link via VLAN trunking if you daisy-chain.
----
-
 
 ## 🧩 Device Inventory (By VLAN)
 
@@ -121,4 +112,10 @@
 
 ---
 
-You’ve now got a topology that’s smart, secure, and modular—each VLAN plays a tight role, cross-zone file flow is scoped and intentional, and your physical layout supports growth. Want me to translate this into a visual rack + switch diagram next?
+### ⚡ TP-Link Access Layer Distribution
+
+- **TP-Link #1 (VLAN 10)**: `dietbox`, `minibox`, `workbox`, `chromebooks`
+- **TP-Link #2 (VLAN 20)**: `googletv`, `smarttv`, printer, Kasa gear
+- **TP-Link #3 (VLAN 99)**: overflow test devices, staging containers
+
+> Note: TP-Link #4 is currently unlinked from the Tenda and reserved for future expansion. Could uplink to another TP-Link via VLAN trunking if you daisy-chain.
