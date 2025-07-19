@@ -1,13 +1,4 @@
 # 🧠 SkyNet — Full Topology Map  
-📌 **Prod 3 Snapshot — Finalized Topology with NAS Mounting & VLAN Corrections**  
-🎯 Highlights:
-- ✅ `dellbox` moved to rack zone (VLAN 40) for cleaner VPN isolation and direct NAS access  
-- ✅ `workbox` added to Trusted VLAN at desk  
-- ✅ VLAN 99 remains storage + infra zone  
-- ✅ Cross-VLAN file access: `dellbox` mounts NAS share (volume2) securely  
-- ✅ TP-Link switches assigned single-VLAN uplinks for simplified wiring  
-- ✅ All services segmented, routable, and internally addressable via `.home` DNS
-
 ---
 
 ## 🔐 VLAN Assignment Summary
