@@ -1,5 +1,4 @@
 # 🧠 SkyNet — Full Topology Map  
-
 ---
 
 ## 🔐 VLAN Assignment Summary
@@ -13,6 +12,7 @@
 | 99   | Services    | 10.10.99.0/24    | `raspi4`, `nas`, `router`, `switch`, `raspi3`          | DNS, DHCP, storage, staging                 |
 
 ---
+
 
 ## 🧮 Physical Wiring by Switch
 
@@ -40,6 +40,7 @@
 
 ---
 
+
 ### 🟨 VLAN 20 — IoT Messaging Zone
 
 | Hostname       | Device / Hardware         | Role                                                  |
@@ -51,6 +52,7 @@
 | `kasa-*`       | Kasa Smart Hardware       | HA + Node-RED integration                             |
 
 ---
+
 
 ### 🛡️ VLAN 40 — VPN Downloads & Processing
 
