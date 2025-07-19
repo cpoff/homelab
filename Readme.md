@@ -44,15 +44,7 @@
 | `chromebook1`  | ChromeOS                  | Media/browser client                                |
 | `chromebook2`  | ChromeOS                  | Media/browser client                                |
 
----
 
-### ⚡ TP-Link Access Layer Distribution
-
-- **TP-Link #1 (VLAN 10)**: `dietbox`, `minibox`, `workbox`, `chromebooks`
-- **TP-Link #2 (VLAN 20)**: `googletv`, `smarttv`, printer, Kasa gear
-- **TP-Link #3 (VLAN 99)**: overflow test devices, staging containers
-
-> Note: TP-Link #4 is currently unlinked from the Tenda and reserved for future expansion. Could uplink to another TP-Link via VLAN trunking if you daisy-chain.
 ---
 
 
@@ -104,6 +96,15 @@
 | Pi-hole Admin       | `raspi4`        | `http://dns.home/admin`| DNS dashboard and logging                   |
 | Media Groomers      | `dellbox`       | Local containers        | Sonarr, Radarr, FileBot → output to NAS     |
 
+---
+
+### ⚡ TP-Link Access Layer Distribution
+
+- **TP-Link #1 (VLAN 10)**: `dietbox`, `minibox`, `workbox`, `chromebooks`
+- **TP-Link #2 (VLAN 20)**: `googletv`, `smarttv`, printer, Kasa gear
+- **TP-Link #3 (VLAN 99)**: overflow test devices, staging containers
+
+> Note: TP-Link #4 is currently unlinked from the Tenda and reserved for future expansion. Could uplink to another TP-Link via VLAN trunking if you daisy-chain.
 ---
 
 ## 🧠 Internal DNS `.home` Records
