@@ -68,21 +68,12 @@
 
 ---
 
-|                |                           |                                                              |
-|----------------|---------------------------|-------------------------------------------------------------|
-| `       `      |                           |                                                             |
-| `       `      |                           |                                                             |
-
-
 
 ### 🛡️ VLAN 40 — VPN Downloads & Processing
 
 | Hostname       | Device / OS              | Role                                                        |
 |----------------|---------------------------|-------------------------------------------------------------|
 | `dellbox`      | Dell Desktop / Pop!_OS    | Gluetun VPN, qBittorrent, Sonarr/Radarr/FileBot → mounts NAS share
-
-> Mount point: `/mnt/nas_media` mapped to `/volume2/media` via SMB/NFS  
-> Cross-VLAN access permitted via static route or port-level firewall rules
 
 ---
 
