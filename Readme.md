@@ -1,4 +1,15 @@
-# 🧠 SkyNet — Full Topology Map  
+# 🧠 SkyNet — Full Homelab Topology Map
+
+## 📌 Prod 3 Snapshot
+**Topology with VLAN Segmentation, NAS Mounting & VPN Grooming Node**
+
+### ✅ Highlights
+- `dellbox` (Debian) placed on VLAN 40 in the rack zone for secure downloading and post-processing
+- NAS media share (`/volume2/media`) mounted via SMB on `dellbox` at `/mnt/nas_media`
+- VLAN segmentation with internal-only `.home` DNS resolution for all service endpoints
+- Tenda TEG208E serves as core switch; TP-Link switches fan out VLANs and device zones
+- Cross-VLAN access controlled by static routing and port-level firewall rules
+
 ---
 
 ## 🔐 VLAN Assignment Summary
@@ -13,10 +24,9 @@
 
 ---
 
+## 🧮 Physical Wiring — Tenda Core (8-Port Max)
 
-## 🧮 Physical Wiring — Tenda Switch w/ 8-Port Constraints
-
-### 🌐 Tenda TEG208E — Core (8 Ports Total)
+### 🌐 Tenda TEG208E — Core Managed Switch
 
 | Port | Connected Device / Uplink      | VLAN     | Role                                 |
 |------|--------------------------------|----------|--------------------------------------|
@@ -24,15 +34,16 @@
 | 2    | `nas`                          | 99       | Synology Plex / media storage        |
 | 3    | `raspi4`                       | 99       | Pi-hole + Unbound DNS                |
 | 4    | `raspi3`                       | 99       | Experimental node                    |
-| 5    | `dellbox`                      | 40       | VPN downloads + FileBot pipeline     |
-| 6    | TP-Link #1 — Desk Zone         | 10       | `dietbox`, `minibox`, `workbox`      |
+| 5    | `dellbox`                      | 40       | VPN downloads + FileBot stack        |
+| 6    | TP-Link #1 — Desk Zone         | 10       | `dietbox`, `minibox`, `workbox`, chromebooks |
 | 7    | TP-Link #2 — TV / IoT Zone     | 20       | `googletv`, `smarttv`, printer, Kasa |
-| 8    | TP-Link #3 — Lab/Staging       | 99       | Future experimental/test devices     |
+| 8    | TP-Link #3 — Lab / Staging     | 99       | Test devices, overflow containers    |
+
+> TP-Link #4 (Spare Shelf) is not currently uplinked due to port constraints.
 
 ---
 
-
-## 🧩 Device Inventory (By VLAN)
+## 🧩 Device Inventory by VLAN
 
 ### 🟩 VLAN 10 — Trusted Clients
 
@@ -44,10 +55,6 @@
 | `chromebook1`  | ChromeOS                  | Media/browser client                                |
 | `chromebook2`  | ChromeOS                  | Media/browser client                                |
 
-
----
-
-
 ### 🟨 VLAN 20 — IoT Messaging Zone
 
 | Hostname       | Device / Hardware         | Role                                                  |
@@ -58,16 +65,13 @@
 | `printer`      | Network Printer           | LAN-restricted                                        |
 | `kasa-*`       | Kasa Smart Hardware       | HA + Node-RED integration                             |
 
----
-
-
-### 🛡️ VLAN 40 — VPN Downloads & Processing
+### 🛡️ VLAN 40 — VPN Grooming Node
 
 | Hostname       | Device / OS              | Role                                                        |
 |----------------|---------------------------|-------------------------------------------------------------|
-| `dellbox`      | Dell Desktop / Pop!_OS    | Gluetun VPN, qBittorrent, Sonarr/Radarr/FileBot → mounts NAS share
-
----
+| `dellbox`      | Dell Desktop / Debian     | Gluetun VPN, qBittorrent, Sonarr/Radarr/FileBot stack  
+> Mount point: `/mnt/nas_media` ←→ NAS `/volume2/media` via SMB  
+> Cross-VLAN access via static route / firewall rules  
 
 ### 🟦 VLAN 99 — Infrastructure Backbone
 
@@ -91,20 +95,11 @@
 | Node-RED            | `dietbox`       | `http://node-red.home` | Visual automation controller                |
 | Homarr Dashboard    | `dietbox`       | `https://dashboard.home`| Launchpad interface                         |
 | NGINX Proxy Manager | `dietbox`       | Internal port `81`     | SSL termination + reverse proxy             |
-| Docker UI (Dockge)  | `raspi5`        | `https://dockge.home`  | Container orchestration tool                |
+| Docker UI (Dockge)  | `raspi5`        | `https://dockge.home`  | Container orchestration                     |
 | Uptime Kuma         | `dietbox`       | `https://kuma.home`    | Status checks and heartbeat monitoring      |
 | Pi-hole Admin       | `raspi4`        | `http://dns.home/admin`| DNS dashboard and logging                   |
 | Media Groomers      | `dellbox`       | Local containers        | Sonarr, Radarr, FileBot → output to NAS     |
 
----
-
-### ⚡ TP-Link Access Layer Distribution
-
-- **TP-Link #1 (VLAN 10)**: `dietbox`, `minibox`, `workbox`, `chromebooks`
-- **TP-Link #2 (VLAN 20)**: `googletv`, `smarttv`, printer, Kasa gear
-- **TP-Link #3 (VLAN 99)**: overflow test devices, staging containers
-
-> Note: TP-Link #4 is currently unlinked from the Tenda and reserved for future expansion. Could uplink to another TP-Link via VLAN trunking if you daisy-chain.
 ---
 
 ## 🧠 Internal DNS `.home` Records
@@ -119,5 +114,3 @@
 | `dns.home`          | `10.10.99.4`     | `raspi4`                      |
 | `mqtt.home`         | `10.10.20.15`    | `raspi5`                      |
 | `node-red.home`     | `10.10.10.10`    | `dietbox`                     |
-
----
