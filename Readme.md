@@ -1,14 +1,24 @@
 # 🧠 SkyNet — Full Homelab Topology Map
 
 ## 📌 Prod 3 Snapshot
-**Topology with VLAN Segmentation, NAS Mounting & VPN Grooming Node**
+**Topology with VLAN Segmentation, NAS Mounting, VPN Grooming Node, and Wireless SSIDs**
 
 ### ✅ Highlights
 - `dellbox` (Debian) placed on VLAN 40 in the rack zone for secure downloading and post-processing
 - NAS media share (`/volume2/media`) mounted via SMB on `dellbox` at `/mnt/nas_media`
-- VLAN segmentation with internal-only `.home` DNS resolution for all service endpoints
-- Tenda TEG208E serves as core switch; TP-Link switches fan out VLANs and device zones
-- Cross-VLAN access controlled by static routing and port-level firewall rules
+- `.home` internal DNS domain for service resolution
+- Tenda TEG208E serves as the core switch, uplinking to TP-Link access switches
+- SSID mapping ensures wireless clients are properly segmented by access role
+
+---
+
+## 📶 Wireless SSIDs
+
+| SSID Name         | Associated VLAN | Purpose                            |
+|-------------------|------------------|------------------------------------|
+| `SkyNet-Trusted`  | VLAN 10          | Full access for orchestration nodes and personal devices |
+| `SkyNet-IoT`      | VLAN 20          | Smart devices and broadcast clients |
+| `SkyNet-Guest`    | VLAN 30          | Internet-only access for guests     |
 
 ---
 
