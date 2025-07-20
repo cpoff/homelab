@@ -1,4 +1,87 @@
-# 🧠 SkyNet — Full Homelab Topology Map
+# 🧠 SkyNet — IoT-Secured Homelab Network Layout (Simplified, No Guest Network)
+
+## 🧩 Zones Overview
+
+| Zone             | Devices                                                  | Role                                          | Notes                                               |
+|------------------|-----------------------------------------------------------|-----------------------------------------------|-----------------------------------------------------|
+| **Trusted LAN**  | `dietbox`, `minibox`, `workbox`, `chromebooks`           | Personal & homelab orchestration nodes        | Full access to infrastructure + dashboards          |
+| **IoT Zone**     | `googletv`, `smarttv`, `printer`, `kasa-*`               | Noisy/broadcast devices                       | Internet-only access via firewall isolation         |
+| **VPN Grooming** | `dellbox`                                                | qBittorrent, Sonarr/Radarr/FileBot stack      | Can mount NAS share, isolated from other LAN zones |
+| **Infrastructure** | `raspi4`, `raspi3`, `nas`, `router`, `switch`         | Core services                                 | DNS, DHCP, media library, routing                   |
+
+---
+
+## 📶 SSID Configuration
+
+| SSID Name         | Associated Zone   | Device Access                   | Controls                                     |
+|-------------------|-------------------|----------------------------------|----------------------------------------------|
+| `SkyNet-Trusted`  | Trusted LAN       | `dietbox`, `workbox`, etc.      | Full access to LAN, NAS, dashboards          |
+| `SkyNet-IoT`      | IoT Zone          | Smart TVs, bulbs, printer       | Blocked from LAN; allowed internet only      |
+
+---
+
+## 🔐 Suggested Firewall Rules
+
+| Source Zone     | Destination Zone    | Rule Description                                 |
+|------------------|---------------------|--------------------------------------------------|
+| IoT             | Trusted             | ❌ Deny all                                      |
+| IoT             | Infrastructure      | ❌ Deny (except optional DNS)                   |
+| IoT             | Internet            | ✅ Allow (rate-limited or monitored)            |
+| Trusted         | Infrastructure      | ✅ Allow                                        |
+| VPN Grooming    | NAS (`/mnt/nas_media`) | ✅ Allow (via IP whitelist or port restriction) |
+
+---
+
+## 📦 Device Role Map
+
+### 🟩 Trusted LAN Devices
+
+| Device       | Role                                       |
+|--------------|--------------------------------------------|
+| `dietbox`    | Automation hub (Node-RED, Kuma, Homarr)    |
+| `minibox`    | Plex client, HA frontend                   |
+| `workbox`    | Workstation node                           |
+| `chromebooks`| Media/browser clients                      |
+
+### 🟨 IoT Zone Devices
+
+| Device       | Role                                       |
+|--------------|--------------------------------------------|
+| `googletv`   | Primary Plex playback                      |
+| `smarttv`    | Secondary Plex endpoint                    |
+| `printer`    | LAN-restricted print node                  |
+| `kasa-*`     | Smart plugs/lights (HA triggers)           |
+
+### 🛡️ VPN Grooming Node
+
+| Device       | Role                                       |
+|--------------|--------------------------------------------|
+| `dellbox`    | Debian box running Gluetun, grooming stack |
+|              | Mounts NAS media share via SMB             |
+
+### 🏛️ Infrastructure Devices
+
+| Device       | Role                                       |
+|--------------|--------------------------------------------|
+| `nas`        | Jellyfin, Plex, Home Assistant             |
+| `raspi4`     | Pi-hole + DNS                              |
+| `raspi3`     | Experimental node                          |
+| `router`     | DHCP, routing                              |
+| `switch`     | Core trunk distribution                    |
+
+---
+
+## 🧠 Monitoring + Hardening Tips
+
+- 🧱 Use Pi-hole (on `raspi4`) to log and block outbound IoT traffic
+- 🎚️ Limit device access with static IPs + DNS zone files
+- 🕵️ Consider enabling host-level firewalls on NAS and `dellbox`
+- 🗂️ Use NAS accounts with folder-level permissions (read-only for groomers)
+
+---
+
+
+# 🧠 SkyNet — Full Homelab Topology Map  HARD 
 
 ## 📌 Prod 3 Snapshot
 **Topology with VLAN Segmentation, NAS Mounting, VPN Grooming Node, and Wireless SSIDs**
