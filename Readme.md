@@ -79,6 +79,66 @@
 - 🗂️ Use NAS accounts with folder-level permissions (read-only for groomers)
 
 ---
+## 🧮 Physical Wiring Layout — IoT-Secured Design with Existing Switches
+
+Even in a simplified segmentation model, your managed switch and TP-Link units play a critical role in physical organization. Here's how to leverage all switches while keeping the zones clean and secure.
+
+---
+
+### 🌐 Core Switch — Tenda TEG208E (8-Port Limit)
+
+| Port | Uplink / Device           | Role / VLAN / Zone                       |
+|------|---------------------------|------------------------------------------|
+| 1    | `router`                  | Routing, DHCP (Infrastructure)           |
+| 2    | `nas`                     | Media server + HA host (Infrastructure) |
+| 3    | `raspi4`                  | Pi-hole DNS (Infrastructure)            |
+| 4    | `raspi3`                  | Experimental node (Infrastructure)      |
+| 5    | `dellbox`                 | VPN Grooming, NAS mount (VPN zone)      |
+| 6    | TP-Link #1 — Desk Zone    | `dietbox`, `minibox`, `workbox`, chromebooks (Trusted) |
+| 7    | TP-Link #2 — IoT Zone     | `googletv`, `smarttv`, `printer`, `kasa-*` (IoT) |
+| 8    | TP-Link #3 — Overflow Lab | Staging gear, containers (Trusted or Infra) |
+
+> TP-Link #4 (Spare Shelf): Optional daisy-chain from TP-Link #3 or local-only devices
+
+---
+
+### 🖥️ TP-Link #1 — Desk / Trusted Zone
+
+| Connected Devices          | Role                             |
+|----------------------------|----------------------------------|
+| `dietbox`                 | Node-RED, Kuma, Homarr           |
+| `minibox`                 | Plex client, HA frontend         |
+| `workbox`                 | Workstation                      |
+| `chromebook1/2`           | Media/browser clients            |
+
+---
+
+### 📺 TP-Link #2 — TV / IoT Zone
+
+| Connected Devices          | Role                             |
+|----------------------------|----------------------------------|
+| `googletv`                | Primary Plex client              |
+| `smarttv`                 | Secondary Plex client            |
+| `printer`                 | Network print node               |
+| `kasa-*`                  | Smart devices (HA triggers)      |
+
+---
+
+### 🧪 TP-Link #3 — Lab / Overflow Staging
+
+| Connected Devices          | Role                             |
+|----------------------------|----------------------------------|
+| Test containers or nodes  | Debug, isolation, expansion      |
+
+---
+
+### 🔄 TP-Link #4 — Spare Shelf
+
+| Status                     | Role                             |
+|----------------------------|----------------------------------|
+| Unused (no uplink)         | Reserved for future expansion    |
+
+---
 
 
 # 🧠 SkyNet — Full Homelab Topology Map  HARD 
