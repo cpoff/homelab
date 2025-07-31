@@ -94,7 +94,7 @@
 | `minibox.home`   | ✅                | Personal / private access      |
 | `workbox.home`   | ✅                | Reachable on demand            |
 
-> 🔒 **Traffic is encrypted and authenticated internally; no external access assumptions (e.g., Silverton/Dubai).**
+> 🔒 **Traffic is encrypted and authenticated internally**
 
 ---
 
