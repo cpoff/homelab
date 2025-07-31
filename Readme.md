@@ -84,7 +84,6 @@
 
 - **Enabled Nodes**: All devices above except Smart TV and Printer  
 - **Role**:
-  - Remote homelab access from Silverton/Dubai  
   - Secure inter-node transport  
   - Fallback DNS and dashboard accessibility  
   - Optional MagicDNS override support  
