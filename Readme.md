@@ -27,9 +27,9 @@
 | Port | Device                          | Static IP       | Hostname         | Role / Notes                        |
 |------|----------------------------------|------------------|------------------|-------------------------------------|
 | 1    | Uplink to Tenda Managed (Port 7)| —                | —                | Backbone                            |
-| 2    | GMKtec MiniPC (Ubuntu)          | 10.10.1.60       | `minipc.local`   | Uptime Kuma, Master Dashboard       |
+| 2    | GMKtec MiniPC (Ubuntu)          | 10.10.1.60       | `minibox.home`   | Uptime Kuma, Master Dashboard       |
 | 3    | Dell Work Desktop               | 10.10.1.70       | —                | Semi-trusted, productivity          |
-| 4    | Raspberry Pi 5 (RaspiOS)        | 10.10.1.5        | `raspi5.local`   | Pi-hole + Unbound (Primary DNS)     |
+| 4    | Raspberry Pi 5 (RaspiOS)        | 10.10.1.5        | `raspi5.home`   | Pi-hole + Unbound (Primary DNS)     |
 | 5–8  | Reserved                        | —                | —                | Future expansion                    |
 
 ---
@@ -68,10 +68,10 @@
 | Device               | Switch Name             | Port # | Static IP       | Hostname         | Role / Notes                        |
 |----------------------|--------------------------|--------|------------------|------------------|-------------------------------------|
 | Synology NAS DS220+  | Tenda Managed Switch     | Port 2 | 10.10.1.50       | `nas.local`      | Plex, Home Assistant                |
-| Raspberry Pi 3       | Tenda Managed Switch     | Port 4 | 10.10.1.3        | `raspi3.local`   | Pi-hole + Unbound (Backup DNS)      |
-| Raspberry Pi 4       | Tenda Managed Switch     | Port 5 | 10.10.1.4        | `raspi4.local`   | Docker host / future expansion      |
-| GMKtec MiniPC        | TP-Link Office Switch    | Port 2 | 10.10.1.60       | `minipc.local`   | Uptime Kuma, Master Dashboard       |
-| Raspberry Pi 5       | TP-Link Office Switch    | Port 4 | 10.10.1.5        | `raspi5.local`   | Pi-hole + Unbound (Primary DNS)     |
+| Raspberry Pi 3       | Tenda Managed Switch     | Port 4 | 10.10.1.3        | `raspi3.home`   | Pi-hole + Unbound (Backup DNS)      |
+| Raspberry Pi 4       | Tenda Managed Switch     | Port 5 | 10.10.1.4        | `raspi4.home`   | Docker host / future expansion      |
+| GMKtec MiniPC        | TP-Link Office Switch    | Port 2 | 10.10.1.60       | `minibox.home`   | Uptime Kuma, Master Dashboard       |
+| Raspberry Pi 5       | TP-Link Office Switch    | Port 4 | 10.10.1.5        | `raspi5.home`   | Pi-hole + Unbound (Primary DNS)     |
 
 ---
 
@@ -89,10 +89,10 @@
 | Hostname         | IP Address       | Description                          |
 |------------------|------------------|--------------------------------------|
 | `nas.local`      | 10.10.1.50       | Synology NAS DS220+                  |
-| `raspi3.local`   | 10.10.1.3        | Raspberry Pi 3 (DietPi)              |
-| `raspi4.local`   | 10.10.1.4        | Raspberry Pi 4 (DietPi)              |
-| `raspi5.local`   | 10.10.1.5        | Raspberry Pi 5 (RaspiOS)             |
-| `minipc.local`   | 10.10.1.60       | GMKtec MiniPC (Ubuntu)               |
+| `raspi3.home`   | 10.10.1.3        | Raspberry Pi 3 (DietPi)              |
+| `raspi4.home`   | 10.10.1.4        | Raspberry Pi 4 (DietPi)              |
+| `raspi5.home`   | 10.10.1.5        | Raspberry Pi 5 (RaspiOS)             |
+| `minipc.home`   | 10.10.1.60       | GMKtec MiniPC (Ubuntu)               |
 
 ---
 
