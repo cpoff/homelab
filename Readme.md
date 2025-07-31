@@ -12,10 +12,10 @@
 | Port | Device / Connection                             | Static IP       | Hostname         | Role / Notes                        |
 |------|--------------------------------------------------|------------------|------------------|-------------------------------------|
 | 1    | Router LAN Port 1                                | —                | —                | Gateway                             |
-| 2    | Synology NAS DS220+                              | 10.10.1.50       | `nas.local`      | Plex, Home Assistant                |
+| 2    | Synology NAS DS220+                              | 10.10.1.50       | `nas.home`      | Plex, Home Assistant                |
 | 3    | HP Printer                                        | 10.10.1.20       | —                | Semi-trusted, allow from PCs only   |
-| 4    | Raspberry Pi 3 (DietPi)                           | 10.10.1.3        | `raspi3.local`   | Pi-hole + Unbound (Backup DNS)      |
-| 5    | Raspberry Pi 4 (DietPi)                           | 10.10.1.4        | `raspi4.local`   | Docker host / future expansion      |
+| 4    | Raspberry Pi 3 (DietPi)                           | 10.10.1.3        | `raspi3.home`   | Pi-hole + Unbound (Backup DNS)      |
+| 5    | Raspberry Pi 4 (DietPi)                           | 10.10.1.4        | `raspi4.home`   | Docker host / future expansion      |
 | 6    | TP-Link Media Switch (Unmanaged)                 | —                | —                | Smart TV + downstream IoT zone      |
 | 7    | TP-Link Office Switch (Unmanaged)                | —                | —                | MiniPC, Raspi5                      |
 | 8    | Tenda Overflow Switch (Unmanaged)                | —                | —                | Reserved for future devices         |
