@@ -1,4 +1,5 @@
-# 🛰️ SkyNet Topology – `10.10.1.0/24` Subnet
+# ☁️ SkyNet – Prod 2 Architecture Rollup
+
 
 ## 🌐 Router: TP-Link Archer AX90 (AX6600)
 - LAN Port 1 → Tenda TEG208E Managed Switch (Port 1)
