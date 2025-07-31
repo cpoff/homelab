@@ -1,4 +1,4 @@
-# 🏠 Curt's Homelab Topology – `10.10.1.0/24` Subnet
+# 🛰️ SkyNet Topology – `10.10.1.0/24` Subnet
 
 ## 🌐 Router: TP-Link Archer AX90 (AX6600)
 - LAN Port 1 → Tenda TEG208E Managed Switch (Port 1)
@@ -16,8 +16,8 @@
 | 3    | HP Printer                                        | 10.10.1.20    | —                | Semi-trusted, allow from PCs only   |
 | 4    | Raspberry Pi 3 (DietPi)                           | 10.10.1.3     | `raspi3.home`    | Pi-hole + Unbound (Backup DNS)      |
 | 5    | Raspberry Pi 4 (DietPi)                           | 10.10.1.4     | `raspi4.home`    | Docker host / future expansion      |
-| 6    | TP-Link Media Switch (Unmanaged)                 | —             | —                | Smart TV + downstream IoT zone      |
-| 7    | TP-Link Office Switch (Unmanaged)                | —             | —                | `minibox.home`, `raspi5.home`       |
+| 6    | TP-Link Media Switch (Unmanaged)                 | —             | —                | Downstream zone for Smart TV        |
+| 7    | TP-Link Office Switch (Unmanaged)                | —             | —                | MiniPC, Raspi5                      |
 | 8    | Tenda Overflow Switch (Unmanaged)                | —             | —                | Reserved for future devices         |
 
 ---
@@ -39,8 +39,8 @@
 | Port | Device                          | Static IP     | Hostname         | Role / Notes                        |
 |------|----------------------------------|---------------|------------------|-------------------------------------|
 | 1    | Uplink to Tenda Managed (Port 6)| —             | —                | Backbone                            |
-| 2    | Hisense Smart TV (Android TV)   | 10.10.1.90    | —                | Plex client only                    |
-| 3–8  | Kasa Smart Plugs & Switches     | DHCP          | —                | Guest SSID only                     |
+| 2    | Hisense Smart TV (Android TV)   | 10.10.1.90    | —                | Plex client (moved to trusted LAN)  |
+| 3–8  | Reserved                        | —             | —                | Future wired media or IoT           |
 
 ---
 
@@ -55,10 +55,10 @@
 
 ## 📶 SSID & Segmentation Table
 
-| SSID      | Band     | VLAN | Devices Assigned                       | IP Range           | Security Settings               |
-|-----------|----------|------|----------------------------------------|--------------------|---------------------------------|
-| `Spicy Mac` | Mixed  | —    | `nas.home`, `minibox.home`, `raspi5.home` | 10.10.1.x           | Trusted, unrestricted           |
-| `Champs`    | 2.4GHz | —    | Kasa Smart Plugs, Smart TV             | 10.10.2.100–200     | Guest isolation, no LAN access |
+| SSID         | Band     | VLAN | Devices Assigned                                | IP Range           | Security Settings               |
+|--------------|----------|------|-------------------------------------------------|--------------------|---------------------------------|
+| `Spicy Mac`  | Mixed    | —    | `nas.home`, `minibox.home`, `raspi5.home`, Smart TV | 10.10.1.x           | Trusted, unrestricted           |
+| `Champs`     | 2.4GHz   | —    | Kasa Smart Plugs, smart switches                | 10.10.2.100–200     | Guest isolation, no LAN access |
 
 ---
 
@@ -79,6 +79,6 @@
 | Layer         | Method                                | Purpose                          |
 |---------------|----------------------------------------|----------------------------------|
 | **Router**    | Guest SSID + AP Isolation              | Isolate wireless IoT devices     |
-| **Switch**    | Port-level topology                    | Prevent lateral movement         |
+| **Switch**    | Physical port topology                 | Prevent lateral movement         |
 | **UFW**       | Host firewalls on Linux nodes          | Block unsolicited traffic        |
-| **Pi-hole**   | DNS filtering, ad/telemetry blocking   | Harden IoT and TV environments   |
+| **Pi-hole**   | DNS filtering & telemetry blocking     | Harden IoT and media surfaces    |
