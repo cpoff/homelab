@@ -17,9 +17,9 @@
 | 3    | HP Printer                                        | 10.10.1.20    | —                | Semi-trusted, allow from PCs only   |
 | 4    | Raspberry Pi 3 (DietPi)                           | 10.10.1.3     | `raspi3.home`    | Pi-hole + Unbound (Backup DNS)      |
 | 5    | Raspberry Pi 4 (DietPi)                           | 10.10.1.4     | `raspi4.home`    | Docker host / future expansion      |
-| 6    | TP-Link Media Switch (Unmanaged)                 | —             | —                | Downstream zone for Smart TV        |
-| 7    | TP-Link Office Switch (Unmanaged)                | —             | —                | MiniPC, Raspi5                      |
-| 8    | Tenda Overflow Switch (Unmanaged)                | —             | —                | Reserved for future devices         |
+| 6    | TP-Link Switch - Media                 | —             | —                | Downstream zone for Smart TV        |
+| 7    | TP-Link Switch - Office                | —             | —                | MiniPC, Raspi5                      |
+| 8    | Tenda Switch - Overflow                | —             | —                | Reserved for future devices         |
 
 ---
 
