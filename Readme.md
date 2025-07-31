@@ -55,10 +55,10 @@
 
 ## 📶 SSID & Segmentation Table
 
-| SSID        | Band     | VLAN | Devices Assigned                       | IP Range           | Security Settings               |
-|-------------|----------|------|----------------------------------------|--------------------|---------------------------------|
-| `Spicy Mac` | Mixed    | —    | `nas.home`, `minibox.home`, `raspi5.home` | 10.10.1.x           | Trusted, unrestricted           |
-| `Guster`    | 2.4GHz   | —    | Kasa Smart Plugs, Smart TV             | 10.10.2.100–200     | Guest isolation, no LAN access |
+| SSID      | Band     | VLAN | Devices Assigned                       | IP Range           | Security Settings               |
+|-----------|----------|------|----------------------------------------|--------------------|---------------------------------|
+| `Spicy Mac` | Mixed  | —    | `nas.home`, `minibox.home`, `raspi5.home` | 10.10.1.x           | Trusted, unrestricted           |
+| `Champs`    | 2.4GHz | —    | Kasa Smart Plugs, Smart TV             | 10.10.2.100–200     | Guest isolation, no LAN access |
 
 ---
 
