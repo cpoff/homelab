@@ -1,85 +1,102 @@
-# ☁️ SkyNet – Prod 2 Architecture Rollup
+# ☁️ SkyNet – Prod 2 Architecture Rollup (Subnet: 12.12.1.0/24)
 
+---
 
 ## 🌐 Router: TP-Link Archer AX90 (AX6600)
+- LAN IP: `12.12.1.1` (`router.home`)
+- DHCP Range: `12.12.1.100–199`
+- Static Reservations: Core nodes only
 - LAN Port 1 → Tenda TEG208E Managed Switch (Port 1)
-- DHCP Range: `10.10.1.100–199`
-- Static Reservations: Core devices only
 
 ---
 
-## 🧠 Tenda TEG208E Managed Switch (Center Rack)
+## 🧠 Center Rack – Tenda TEG208E (Managed Switch)
 
-| Port | Device / Connection                             | Static IP     | Hostname         | Role / Notes                        |
-|------|--------------------------------------------------|---------------|------------------|-------------------------------------|
-| 1    | Router LAN Port 1                                | —             | —                | Gateway                             |
-| 2    | Synology NAS DS220+                              | 10.10.1.50    | `nas.home`       | Plex, Home Assistant                |
-| 3    | HP Printer                                        | 10.10.1.20    | —                | Semi-trusted, allow from PCs only   |
-| 4    | Raspberry Pi 3 (DietPi)                           | 10.10.1.3     | `raspi3.home`    | Pi-hole + Unbound (Backup DNS)      |
-| 5    | Raspberry Pi 4 (DietPi)                           | 10.10.1.4     | `raspi4.home`    | Docker host / future expansion      |
-| 6    | TP-Link Switch - Media                 | —             | —                | Downstream zone for Smart TV        |
-| 7    | TP-Link Switch - Office                | —             | —                | MiniPC, Raspi5                      |
-| 8    | Tenda Switch - Overflow                | —             | —                | Reserved for future devices         |
-
----
-
-## 🖥️ TP-Link Office Switch (Unmanaged)
-
-| Port | Device                          | Static IP     | Hostname         | Role / Notes                        |
-|------|----------------------------------|---------------|------------------|-------------------------------------|
-| 1    | Uplink to Tenda Managed (Port 7)| —             | —                | Backbone                            |
-| 2    | GMKtec MiniPC (Ubuntu)          | 10.10.1.60    | `minibox.home`   | Uptime Kuma, Master Dashboard       |
-| 3    | Dell Work Desktop               | 10.10.1.70    | —                | Semi-trusted, productivity          |
-| 4    | Raspberry Pi 5 (RaspiOS)        | 10.10.1.5     | `raspi5.home`    | Pi-hole + Unbound (Primary DNS)     |
-| 5–8  | Reserved                        | —             | —                | Future expansion                    |
+| Port | Device                            | IP Address     | Hostname         | Role                          |
+|------|------------------------------------|----------------|------------------|-------------------------------|
+| 1    | Router (AX90)                      | —              | —                | Uplink                        |
+| 2    | Synology NAS DS220+                | 12.12.1.50     | `nas.home`       | Plex, Home Assistant          |
+| 3    | HP Printer                         | 12.12.1.20     | —                | Semi-trusted, print only      |
+| 4    | Raspberry Pi 3 (DietPi)            | 12.12.1.3      | `raspi3.home`    | Pi-hole (Backup DNS)          |
+| 5    | Raspberry Pi 4 (DietPi)            | 12.12.1.4      | `raspi4.home`    | Uptime Kuma, container host   |
+| 6    | TP-Link Media Switch (Unmanaged)   | —              | —                | Smart TV zone                 |
+| 7    | TP-Link Office Switch (Unmanaged)  | —              | —                | MiniPC + Raspi5 zone          |
+| 8    | Tenda Overflow Switch (Unmanaged)  | —              | —                | Reserved                      |
 
 ---
 
-## 📺 TP-Link Media Switch (Unmanaged)
+## 🖥️ Office Zone – TP-Link Switch (Unmanaged)
 
-| Port | Device                          | Static IP     | Hostname         | Role / Notes                        |
-|------|----------------------------------|---------------|------------------|-------------------------------------|
-| 1    | Uplink to Tenda Managed (Port 6)| —             | —                | Backbone                            |
-| 2    | Hisense Smart TV (Android TV)   | 10.10.1.90    | —                | Plex client (moved to trusted LAN)  |
-| 3–8  | Reserved                        | —             | —                | Future wired media or IoT           |
-
----
-
-## 🔌 Tenda Overflow Switch (Unmanaged)
-
-| Port | Device                          | Static IP     | Hostname         | Role / Notes                        |
-|------|----------------------------------|---------------|------------------|-------------------------------------|
-| 1    | Uplink to Tenda Managed (Port 8)| —             | —                | Backbone                            |
-| 2–8  | Reserved                        | —             | —                | Future expansion                    |
+| Port | Device                    | IP Address     | Hostname         | Role                           |
+|------|---------------------------|----------------|------------------|--------------------------------|
+| 1    | Uplink to Center Rack SW  | —              | —                | Backbone                       |
+| 2    | GMKtec MiniPC (Ubuntu)    | 12.12.1.60     | `minibox.home`   | Dashboard, logging             |
+| 3    | Dell Work Desktop         | 12.12.1.70     | `workbox.home`   | DHCP-reserved, productivity    |
+| 4    | Raspberry Pi 5 (RaspiOS)  | 12.12.1.5      | `raspi5.home`    | Pi-hole (Primary DNS)          |
+| 5–8  | —                         | —              | —                | Reserved ports                 |
 
 ---
 
-## 📶 SSID & Segmentation Table
+## 📺 Media Zone – TP-Link Switch (Unmanaged)
 
-| SSID         | Band     | Devices Assigned                                | IP Range           | Security Settings               |
-|--------------|----------|-------------------------------------------------|--------------------|---------------------------------|
-| `Spicy Mac`  | Mixed    | `nas.home`, `minibox.home`, `raspi5.home`, Smart TV | 10.10.1.x           | Trusted, unrestricted           |
-| `Champs`     | 2.4GHz   | Kasa Smart Plugs, smart switches                | 10.10.2.100–200     | Guest isolation, no LAN access |
-
----
-
-## 🧭 Pi-hole Local DNS Records
-
-| Hostname         | IP Address    | Description                          |
-|------------------|---------------|--------------------------------------|
-| `nas.home`       | 10.10.1.50    | Synology NAS DS220+                  |
-| `raspi3.home`    | 10.10.1.3     | Raspberry Pi 3 (DietPi)              |
-| `raspi4.home`    | 10.10.1.4     | Raspberry Pi 4 (DietPi)              |
-| `raspi5.home`    | 10.10.1.5     | Raspberry Pi 5 (RaspiOS)             |
-| `minibox.home`   | 10.10.1.60    | GMKtec MiniPC (Ubuntu)               |
+| Port | Device                          | IP Address     | Hostname         | Role                          |
+|------|----------------------------------|----------------|------------------|-------------------------------|
+| 1    | Uplink to Center Rack SW        | —              | —                | Backbone                      |
+| 2    | Hisense Smart TV (Android TV)   | 12.12.1.90     | —                | Plex client (wired fallback)  |
+| 3–8  | —                                | —              | —                | Reserved                      |
 
 ---
 
-## 🔐 Segmentation Enforcement Layers
+## 🔌 Overflow Switch – Tenda (Unmanaged)
 
-| Layer         | Method                                | Purpose                          |
-|---------------|----------------------------------------|----------------------------------|
-| **Router**    | Guest SSID + AP Isolation              | Isolate wireless IoT devices     |
-| **Switch**    | Physical port topology                 | Prevent lateral movement         |
-| **UFW**       | Host firewalls on Linux nodes          | Block unsolicited traffic        |
-| **Pi-hole**   | DNS filtering & telemetry blocking     | Harden IoT and media surfaces    |
+| Port | Device           | IP Address | Hostname | Role           |
+|------|------------------|------------|----------|----------------|
+| 1    | Uplink to Rack SW| —          | —        | Backbone       |
+| 2–8  | —                | —          | —        | Expansion zone |
+
+---
+
+## 📶 Wi-Fi Overview
+
+| SSID         | Band     | Assigned Devices                     | Security                          |
+|--------------|----------|--------------------------------------|-----------------------------------|
+| `Spicy Mac`  | Mixed    | NAS, MiniPC, Raspi5, Smart TV        | Trusted, unrestricted LAN access  |
+| `Champs`     | 2.4GHz   | Kasa Smart Plugs, switches           | Guest VLAN isolation, no LAN      |
+
+---
+
+## 🧩 Service Map
+
+| Hostname         | IP Address     | Services Provided                          |
+|------------------|----------------|---------------------------------------------|
+| `raspi5.home`    | 12.12.1.5      | Pi-hole + Unbound (Primary DNS)             |
+| `raspi3.home`    | 12.12.1.3      | Pi-hole (Backup DNS)                        |
+| `raspi4.home`    | 12.12.1.4      | Uptime Kuma, Docker services                |
+| `nas.home`       | 12.12.1.50     | Plex Media Server, Home Assistant           |
+| `minibox.home`   | 12.12.1.60     | Log aggregation, dashboard interface        |
+| `workbox.home`   | 12.12.1.70     | Standard desktop, semi-trusted firewall     |
+
+---
+
+## 🧭 Pi-hole DNS Records (Local DNS)
+
+| Hostname         | IP Address     | Role                          |
+|------------------|----------------|-------------------------------|
+| `raspi3.home`    | 12.12.1.3      | Backup DNS node               |
+| `raspi4.home`    | 12.12.1.4      | Monitoring + containers       |
+| `raspi5.home`    | 12.12.1.5      | Primary DNS node              |
+| `nas.home`       | 12.12.1.50     | File/media/automation         |
+| `minibox.home`   | 12.12.1.60     | Dashboards + logging          |
+| `workbox.home`   | 12.12.1.70     | Desktop workstation           |
+
+---
+
+## 🔐 Segmentation & Security Layers
+
+| Layer          | Enforcement                                | Purpose                          |
+|----------------|---------------------------------------------|----------------------------------|
+| Router         | Guest VLAN + AP Isolation (`Champs` SSID)   | Quarantine IoT traffic           |
+| Managed Switch | Physical port topology                      | Prevent lateral movement         |
+| UFW            | Linux host firewalls                        | Restrict inbound connections     |
+| Pi-hole        | DNS + telemetry filtering                   | Block adware and callouts        |
+
