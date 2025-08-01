@@ -1,12 +1,3 @@
-# Homelab Ansible: DHCP + Pi-hole Automation
-
-## Features
-- Local DHCP served by raspi5 (dnsmasq)
-- Static IP reservations from MAC addresses
-- Pi-hole DNS record syncing
-- Declarative host topology
-
-
 # 🧭 Subnet Migration: Installation Order Guide
 
 A sequenced approach for migrating devices to a new subnet using a TP-Link router and Ansible automation.
@@ -54,4 +45,5 @@ If reverting to default subnet:
 ---
 
 **Last Updated:** `2025-08-01`
+
 
