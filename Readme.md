@@ -94,9 +94,9 @@
 | `raspi5.home`    | ✅                | DNS primary / coordination     |
 | `nas.home`       | ✅                | Remote Plex (optional)         |
 | `minibox.home`   | ✅                | Personal / private access      |
-| `workbox.home`   | ✅                | Reachable on demand            |
+| `workbox.home`   | ❌                | Reachable only via LAN         |
 
-> 🔒 **Traffic is encrypted and authenticated internally**
+> 🔒 **Traffic is encrypted and authenticated internally for enabled nodes**
 
 ---
 
