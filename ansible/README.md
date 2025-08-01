@@ -6,11 +6,6 @@
 - Pi-hole DNS record syncing
 - Declarative host topology
 
-## Usage
-
-Install Ansible:
-```bash
-sudo apt update && sudo apt install ansible
 
 # 🧭 Subnet Migration: Installation Order Guide
 
