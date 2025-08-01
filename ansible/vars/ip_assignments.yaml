@@ -1,0 +1,37 @@
+devices:
+  - hostname: raspi3.home
+    ip: 12.12.1.3
+    mac: B8:27:EB:7A:59:C7
+
+  - hostname: raspi4.home
+    ip: 12.12.1.4
+    mac: DC:A6:32:97:12:54
+
+  - hostname: raspi5.home
+    ip: 12.12.1.5
+    mac: 2C:CF:67:7D:FB:37
+
+  - hostname: darlington.home
+    ip: 12.12.1.50
+    mac: 90:09:D0:11:46:39
+
+  - hostname: minibox.home
+    ip: 12.12.1.60
+    mac_eth: E0:51:D8:1A:E9:71
+    mac_wifi: 1C:79:2D:F9:B1:3E
+
+  - hostname: workbox.home
+    ip: 12.12.1.70
+    mac: B4:E9:B8:B7:06:13
+
+  - hostname: hisense-tv.home
+    ip: 12.12.1.90
+    mac: A0:62:FB:8E:02:B6
+
+  - hostname: hp-printer.home
+    ip: 12.12.1.20
+    mac: DC:4A:3E:A4:B6:AF
+
+  - hostname: chromebook.home
+    ip: 12.12.1.80
+    mac: 00:16:3e:3b:e2:e7

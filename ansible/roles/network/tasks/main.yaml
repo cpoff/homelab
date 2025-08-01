@@ -1,0 +1,12 @@
+- name: Remove static IP configs from Pi devices
+  lineinfile:
+    path: /etc/dhcpcd.conf
+    regexp: '^static'
+    state: absent
+  when: "'raspi' in inventory_hostname"
+
+- name: Add Pi-hole DNS records
+  command: >
+    pihole -a addcustomdns {{ item.hostname }} {{ item.ip }}
+  loop: "{{ devices }}"
+  when: inventory_hostname == "raspi5.home"

@@ -1,0 +1,6 @@
+interface=eth0
+dhcp-range=12.12.1.2,12.12.1.99,12h
+
+{% for device in devices %}
+dhcp-host={{ device.mac }},{{ device.ip }},{{ device.hostname }}
+{% endfor %}

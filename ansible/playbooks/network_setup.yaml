@@ -1,0 +1,10 @@
+- name: Configure Homelab Network
+  hosts: all
+  gather_facts: false
+
+  vars_files:
+    - ../vars/ip_assignments.yaml
+
+  roles:
+    - network
+    - dhcp
