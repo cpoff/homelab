@@ -36,7 +36,7 @@
 |------|---------------------------|----------------|------------------|-----------------------------------|
 | 1    | Uplink to Managed Switch  | —              | —                | Local backbone                    |
 | 2    | GMKtec MiniPC (Ubuntu)    | 12.12.1.60     | `minibox.home`   | Personal desktop, Tailscale       |
-| 3    | Dell Work Desktop         | 12.12.1.70     | `workbox.home`   | Semi-trusted workstation          |
+| 3    | Dell Work Desktop         | 12.12.1.180     | `workbox.home`   | Semi-trusted workstation          |
 | 4    | Raspberry Pi 5 (RaspiOS)  | 12.12.1.5      | `raspi5.home`    | Primary Pi-hole DNS, Tailscale    |
 | 5    | Chromebook (Wi-Fi only)   | 12.12.1.80     | `chromebook.home`| Lightweight mobile endpoint       |
 | 6–8  | —                         | —              | —                | Reserved                          |
@@ -80,7 +80,7 @@
 | `raspi4.home`    | 12.12.1.4      | Docker containers, monitoring      |
 | `nas.home`       | 12.12.1.50     | Plex media server + automation     |
 | `minibox.home`   | 12.12.1.60     | Personal desktop, logging          |
-| `workbox.home`   | 12.12.1.70     | General PC use                     |
+| `workbox.home`   | 12.12.1.180     | General PC use                     |
 | `chromebook.home`| 12.12.1.80     | Lightweight mobile endpoint        |
 
 ---
